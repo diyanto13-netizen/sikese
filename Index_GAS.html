@@ -1,0 +1,3015 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiKeSe - Sistem Keuangan Sekolah</title>
+  
+  <!-- Font Modern Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f172a;        /* Deep Navy */
+      --primary-light: #1e293b;
+      --accent: #059669;         /* Emerald Green */
+      --accent-hover: #047857;
+      --accent-light: #ecfdf5;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --radius: 10px;
+    }
+
+    body.dark {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --border: #1f293d;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary-light: #1e293b;
+    }
+
+    body.dark input,
+    body.dark select,
+    body.dark textarea {
+      background: #172033;
+      color: #f8fafc;
+      border-color: #334155;
+    }
+
+    body.dark table tbody tr:hover {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* CURTAIN LOGIN OVERLAY */
+    #loginOverlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #loginOverlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-100%);
+    }
+
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      color: white;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .pin-input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .pin-input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .pin-field {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 6px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .pin-field:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      width: 100%;
+      padding: 12px;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* TOP NAVBAR */
+    .navbar {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: var(--accent);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .btn-logout:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* NAVIGATION TABS */
+    .tabs-bar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 14px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--primary);
+    }
+
+    /* MAIN CONTAINER */
+    .main-content {
+      padding: 24px;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* GRID 2 COLUMNS (TRANSAKSI) */
+    .pos-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .pos-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* SEARCH INPUT */
+    .search-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      padding-left: 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .student-badge-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    /* MONTH GRID FOR SPP */
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .month-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .month-pill {
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      background: white;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .month-pill.lunas {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .month-pill.selected {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .month-status-tag {
+      font-size: 10px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* CART / KERANJANG */
+    .cart-box {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      position: sticky;
+      top: 90px;
+    }
+
+    .cart-items {
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 13px;
+    }
+
+    .cart-item-title {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .cart-item-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 0;
+      border-top: 2px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    /* TABLE */
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    .tag-lunas {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    .tag-batal {
+      color: #dc2626;
+      font-weight: 600;
+      text-decoration: line-through;
+    }
+
+    /* TOAST ALERT */
+    #toastNotification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: white;
+      padding: 14px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 10000;
+      font-size: 14px;
+    }
+
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* PRINT RECEIPT STYLING */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printArea, #printArea * {
+        visibility: visible;
+      }
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+
+    /* PANDUAN & TUTORIAL STYLING */
+    .tutorial-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .tutorial-pill {
+      padding: 7px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tutorial-pill:hover, .tutorial-pill.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+    }
+    .tutorial-search-box {
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .tutorial-search-box:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    }
+    .feature-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    body.dark .feature-item {
+      background: #172033;
+    }
+    .feature-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--accent);
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .sop-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.7;
+    }
+    body.dark .sop-box {
+      background: #064e3b33;
+      border-color: #065f46;
+      color: #6ee7b7;
+    }
+    .tip-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #92400e;
+      line-height: 1.6;
+    }
+    body.dark .tip-box {
+      background: #78350f26;
+      border-color: #92400e;
+      color: #fde68a;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 14px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    body.dark .faq-question {
+      background: #172033;
+      color: #f8fafc;
+    }
+    .faq-answer {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN CURTAIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+        <svg viewBox="0 0 500 540" style="width: 105px; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="gasGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fef08a" />
+              <stop offset="50%" stop-color="#f59e0b" />
+              <stop offset="100%" stop-color="#b45309" />
+            </linearGradient>
+            <linearGradient id="gasFlame" x1="50%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stop-color="#b91c1c" />
+              <stop offset="60%" stop-color="#dc2626" />
+              <stop offset="100%" stop-color="#f87171" />
+            </linearGradient>
+            <linearGradient id="gasBorderGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fde047" />
+              <stop offset="100%" stop-color="#ca8a04" />
+            </linearGradient>
+            <path id="gasArcTop" d="M 105,210 A 145,145 0 1,1 395,210" fill="none" />
+          </defs>
+
+          <!-- 1. Lingkaran Utama Merah Putih Hijau -->
+          <circle cx="250" cy="210" r="185" fill="#dc2626" stroke="#b45309" stroke-width="3" />
+          <circle cx="250" cy="210" r="172" fill="#ffffff" stroke="#1e293b" stroke-width="1.5" />
+          <circle cx="250" cy="210" r="132" fill="#dc2626" stroke="#b45309" stroke-width="2" />
+          <circle cx="250" cy="210" r="126" fill="#15803d" stroke="#14532d" stroke-width="2" />
+
+          <text font-family="'Arial', 'Helvetica', sans-serif" font-weight="900" font-size="13" fill="#1e293b" letter-spacing="1.2">
+            <textPath href="#gasArcTop" startOffset="50%" text-anchor="middle">
+              YAYASAN PEMBINA LEMBAGA PENDIDIKAN PGRI
+            </textPath>
+          </text>
+
+          <!-- 2. Sayap Emas 5 Helai -->
+          <g fill="url(#gasGold)" stroke="#78350f" stroke-width="1.8" stroke-linejoin="round">
+            <path d="M 230,265 C 190,265 155,255 142,238 C 158,236 182,244 205,252 Z" />
+            <path d="M 225,255 C 180,248 145,232 135,212 C 152,212 178,225 205,240 Z" />
+            <path d="M 220,245 C 175,230 142,206 135,182 C 152,185 178,202 205,224 Z" />
+            <path d="M 222,235 C 178,212 152,180 148,155 C 164,162 186,182 210,210 Z" />
+            <path d="M 228,225 C 190,192 172,158 170,132 C 184,144 202,168 220,196 Z" />
+            <path d="M 270,265 C 310,265 345,255 358,238 C 342,236 318,244 295,252 Z" />
+            <path d="M 275,255 C 320,248 355,232 365,212 C 348,212 322,225 295,240 Z" />
+            <path d="M 280,245 C 325,230 358,206 365,182 C 348,185 322,202 295,224 Z" />
+            <path d="M 278,235 C 322,212 348,180 352,155 C 336,162 314,182 290,210 Z" />
+            <path d="M 272,225 C 310,192 328,158 330,132 C 316,144 298,168 280,196 Z" />
+          </g>
+
+          <!-- 3. Empat Buku Putih -->
+          <g fill="#ffffff" stroke="#0f172a" stroke-width="2" stroke-linejoin="round">
+            <path d="M 205,255 L 246,252 L 246,275 L 205,278 Z" />
+            <line x1="205" y1="262" x2="246" y2="259" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="205" y1="270" x2="246" y2="267" stroke="#94a3b8" stroke-width="1.5" />
+            <path d="M 295,255 L 254,252 L 254,275 L 295,278 Z" />
+            <line x1="295" y1="262" x2="254" y2="259" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="295" y1="270" x2="254" y2="267" stroke="#94a3b8" stroke-width="1.5" />
+            <path d="M 218,205 L 242,205 L 242,252 L 218,255 Z" />
+            <line x1="226" y1="205" x2="226" y2="253" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="234" y1="205" x2="234" y2="253" stroke="#94a3b8" stroke-width="1.5" />
+            <path d="M 282,205 L 258,205 L 258,252 L 282,255 Z" />
+            <line x1="274" y1="205" x2="274" y2="253" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="266" y1="205" x2="266" y2="253" stroke="#94a3b8" stroke-width="1.5" />
+          </g>
+
+          <!-- 4. Suluh & Api 5 Sinar -->
+          <g fill="url(#gasGold)" stroke="#78350f" stroke-width="2">
+            <path d="M 244,188 L 256,188 L 254,272 L 246,272 Z" />
+            <rect x="238" y="180" width="24" height="8" rx="2" fill="#fde047" />
+            <rect x="241" y="186" width="18" height="5" rx="1.5" fill="#ca8a04" />
+          </g>
+          <path d="M 238,180 C 230,172 216,162 214,146 C 222,152 232,160 236,160 C 230,145 234,126 244,116 C 245,132 248,142 250,146 C 252,134 255,116 262,122 C 268,128 266,145 264,160 C 268,160 278,152 286,146 C 284,162 270,172 262,180 Z" fill="url(#gasFlame)" stroke="#7f1d1d" stroke-width="2" />
+          <path d="M 243,180 C 238,172 236,158 244,142 C 246,152 248,158 250,160 C 252,152 254,142 257,148 C 262,158 258,172 257,180 Z" fill="#fef08a" opacity="0.85" />
+
+          <!-- 5. Pita Putih PGRI -->
+          <g>
+            <path d="M 185,275 L 155,268 L 165,282 L 150,296 L 188,290 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="2" />
+            <path d="M 315,275 L 345,268 L 335,282 L 350,296 L 312,290 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="2" />
+            <path d="M 175,270 C 215,264 285,264 325,270 L 320,305 C 280,312 220,312 180,305 Z" fill="#ffffff" stroke="#1e293b" stroke-width="2.5" />
+            <text x="250" y="297" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="28" fill="#dc2626" text-anchor="middle" letter-spacing="3">PGRI</text>
+          </g>
+
+          <!-- 6. Badge Identitas Sekolah -->
+          <g transform="translate(0, 395)">
+            <path d="M 60,18 L 90,0 L 410,0 L 440,18 L 425,75 C 340,95 160,95 75,75 Z" fill="#0f172a" stroke="url(#gasBorderGold)" stroke-width="3" />
+            <path d="M 75,22 L 95,8 L 405,8 L 425,22 L 412,68 C 335,85 165,85 88,68 Z" fill="none" stroke="#facc15" stroke-width="1.2" opacity="0.8" />
+            <text x="250" y="38" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle" letter-spacing="2">SMK PGRI 1</text>
+            <text x="250" y="64" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="16" fill="#facc15" text-anchor="middle" letter-spacing="3">KOTA SUKABUMI</text>
+          </g>
+        </svg>
+      </div>
+
+      <h1 class="login-title">SiKeSe</h1>
+      <p class="login-subtitle">Sistem Keuangan Sekolah SMKS PGRI 1 Kota Sukabumi</p>
+      
+      <div class="pin-input-group">
+        <label for="pinInput">Masukkan PIN Otorisasi</label>
+        <input type="password" id="pinInput" class="pin-field" maxlength="6" placeholder="••••" autofocus>
+      </div>
+
+      <button id="btnLogin" class="btn btn-primary" onclick="handleLogin()">Masuk ke Sistem</button>
+    </div>
+  </div>
+
+  <!-- TOP NAVBAR -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="brand-badge">SiKeSe</span>
+      <span class="brand-title" id="schoolNameHeader">Sistem Keuangan Sekolah</span>
+    </div>
+
+    <div class="nav-user">
+      <button id="themeToggleBtn" onclick="toggleGasTheme()" title="Ganti Mode Gelap / Terang" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        <span id="themeToggleIcon">🌙</span> <span id="themeToggleText">Gelap</span>
+      </button>
+      <div class="user-badge">
+        <span class="user-name" id="userDisplayName">Memuat...</span>
+        <span class="user-role" id="userRoleBadge">-</span>
+      </div>
+      <button class="btn btn-logout" onclick="handleLogout()">Keluar</button>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('transaksi')">💳 Kasir & Pembayaran</button>
+    <button class="tab-btn" onclick="switchTab('dashboard')">📊 Dashboard & Grafik</button>
+    <button class="tab-btn" onclick="switchTab('bukuKas')">📑 Buku Kas & Rekap</button>
+    <button class="tab-btn" onclick="switchTab('tabungan')">🎓 Buku Bayar Siswa</button>
+    <button class="tab-btn" onclick="switchTab('pengaturan')">⚙️ Pengaturan & Backup</button>
+    <button class="tab-btn" onclick="switchTab('tutorial')">📖 Panduan & Tutorial</button>
+  </nav>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="main-content">
+
+    <!-- TAB 1: KASIR & PEMBAYARAN -->
+    <section id="pane-transaksi" class="tab-pane active">
+      <div class="pos-grid">
+        
+        <!-- KOLOM KIRI: FORM PILIH SISWA & ITEM PEMBAYARAN -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">1. Cari & Pilih Siswa</h2>
+            </div>
+            
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="studentSearch" class="search-input" placeholder="Ketik NIS, Nama Siswa, atau Kelas..." oninput="onSearchStudent(this.value)">
+            </div>
+
+            <div id="studentSearchResults" style="display: none; max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;"></div>
+
+            <div id="selectedStudentBadge" class="student-badge-card" style="display: none;">
+              <div>
+                <strong id="badgeStudentName" style="font-size: 15px; color: var(--primary);">-</strong>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                  NIS: <strong id="badgeStudentNis" class="font-mono" style="color: var(--primary);">-</strong> · 
+                  Kelas: <strong id="badgeStudentKelas" style="color: var(--primary);">-</strong> · 
+                  Jurusan: <strong id="badgeStudentJurusan" style="color: var(--primary);">-</strong>
+                </div>
+              </div>
+              <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" onclick="resetSelectedStudent()">Ganti</button>
+            </div>
+          </div>
+
+          <!-- PILIHAN POS BIAYA (MENYESUAIKAN TINGKAT KELAS) -->
+          <div class="card" id="feeSelectionCard" style="display: none;">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title" id="feeCardTitle">2. Pilih Pos Biaya</h2>
+                <p id="feeCardSubtitle" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  Menampilkan pos biaya sesuai tingkat kelas siswa
+                </p>
+              </div>
+            </div>
+
+            <!-- SPP BULANAN -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <label style="font-weight: 700; font-size: 14px;">
+                    SPP (Bulanan) &nbsp;<span style="font-size: 11px; background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px;">Sistem: Bulanan</span>
+                  </label>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                    Tarif: <strong id="sppTarifDisplay" class="font-mono">Rp 300.000</strong>/bulan (Klik bulan untuk bayar)
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 12px; font-weight: 600;">Filter Tahun:</span>
+                  <select id="kasirSppYearFilter" onchange="onKasirSppYearChange()" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: bold; background: white;">
+                    <option value="2024">Tahun 2024</option>
+                    <option value="2025">Tahun 2025</option>
+                    <option value="2026" selected>Tahun 2026</option>
+                    <option value="2027">Tahun 2027</option>
+                    <option value="2028">Tahun 2028</option>
+                    <option value="2029">Tahun 2029</option>
+                    <option value="2030">Tahun 2030</option>
+                  </select>
+                </div>
+              </div>
+              <div class="month-grid" id="sppMonthGrid" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- NON-SPP / POS SISTEM CICILAN (DSP, PKL, KURIKULUM, KESISWAAN, SARPRAS) -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <label style="font-weight: 700; font-size: 14px; display: block;">Pos Biaya Sistem Cicilan</label>
+                <span style="font-size: 11px; background: #eff6ff; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Sistem: Cicilan</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                DSP, PKL, Kurikulum, Kesiswaan &amp; Sarpras dapat diangsur/dicicil bertahap sesuai sisa tagihan.
+              </p>
+              <div id="otherPosList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KOLOM KANAN: KERANJANG PEMBAYARAN -->
+        <div>
+          <div class="cart-box">
+            <h2 class="card-title" style="margin-bottom: 12px;">Keranjang Pembayaran</h2>
+            <div id="cartItemsContainer" class="cart-items">
+              <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px 0;">Belum ada pos yang dipilih.</p>
+            </div>
+
+            <div class="cart-total-row">
+              <span>Total Tagihan:</span>
+              <span id="cartGrandTotal" class="font-mono" style="color: var(--accent);">Rp 0</span>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px;">Metode Pembayaran</label>
+              <select id="paymentMethod" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px;">
+                <option value="Tunai">Tunai (Cash)</option>
+                <option value="Transfer">Transfer Bank / QRIS</option>
+              </select>
+            </div>
+
+            <button id="btnProcessPayment" class="btn btn-primary" onclick="handleProcessPayment()" disabled>Proses Pembayaran & Kwitansi</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: DASHBOARD & GRAFIK -->
+    <section id="pane-dashboard" class="tab-pane">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Penerimaan Hari Ini</div>
+          <div class="stat-value font-mono" id="statToday" style="color: var(--accent);">Rp 0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="statTodaySub">Tunai: Rp 0 · Non-Tunai: Rp 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Penerimaan Bulan Ini</div>
+          <div class="stat-value font-mono" id="statThisMonth" style="color: #0284c7;">Rp 0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="statMonthSub">Tunai: Rp 0 · Non-Tunai: Rp 0</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #059669;">
+          <div class="stat-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Total Pembayaran Tunai (Cash)</span>
+            <span style="font-size: 10px; background: #ecfdf5; color: #059669; padding: 2px 6px; border-radius: 4px; font-weight: 700;">FISIK KASIR</span>
+          </div>
+          <div class="stat-value font-mono" id="statTotalTunai" style="color: #059669;">Rp 0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="statTunaiSub">Akumulasi uang fisik kasir / brankas</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #0284c7;">
+          <div class="stat-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Total Pembayaran Non-Tunai / Transfer</span>
+            <span style="font-size: 10px; background: #f0f9ff; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700;">BANK / QRIS</span>
+          </div>
+          <div class="stat-value font-mono" id="statTotalTransfer" style="color: #0284c7;">Rp 0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="statTransferSub">Akumulasi mutasi rekening bank sekolah</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Transaksi</div>
+          <div class="stat-value font-mono" id="statTotalTrans">0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Kwitansi terverifikasi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Jumlah Siswa Terdaftar</div>
+          <div class="stat-value font-mono" id="statTotalStudents">0</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Siswa aktif di database</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 class="card-title">Grafik Penerimaan Bulanan (Chart.js)</h2>
+            <div id="chartYearTotalBadge" style="font-size: 12px; font-weight: 600; color: #059669; margin-top: 2px;">
+              Memuat data transaksi riil...
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 600;">Pilih Tahun:</span>
+            <select id="chartYearFilter" onchange="loadChartData()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: 600;">
+              <option value="2024">Tahun 2024</option>
+              <option value="2025">Tahun 2025</option>
+              <option value="2026" selected>Tahun 2026</option>
+              <option value="2027">Tahun 2027</option>
+              <option value="2028">Tahun 2028</option>
+              <option value="2029">Tahun 2029</option>
+              <option value="2030">Tahun 2030</option>
+            </select>
+            <button onclick="loadChartData()" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" title="Segarkan Grafik">🔄</button>
+          </div>
+        </div>
+        <div style="height: 350px;">
+          <canvas id="financialChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- MONITORING TUNGGAKAN SISWA PER KELAS -->
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 class="card-title">Monitoring Tunggakan Siswa per Kelas</h2>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              Pilih kelas untuk memeriksa detail tunggakan siswa dan kirim tagihan WhatsApp langsung ke wali murid
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 600;">Pilih Kelas:</span>
+            <select id="dashboardClassSelect" onchange="onDashboardClassChange()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; font-weight: bold; background: white;">
+              <option value="">Pilih Kelas...</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dashboardClassSummaryBar" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; font-size: 12px;">
+          <div>Total Siswa: <strong id="clsTotalStudents" class="font-mono">0</strong></div>
+          <div>·</div>
+          <div>Ada Tunggakan: <strong id="clsUnpaidStudents" class="font-mono" style="color: var(--danger);">0</strong></div>
+          <div>·</div>
+          <div>Lunas: <strong id="clsPaidStudents" class="font-mono" style="color: var(--accent);">0</strong></div>
+          <div>·</div>
+          <div>Total Tunggakan: <strong id="clsTotalArrears" class="font-mono" style="color: var(--danger);">Rp 0</strong></div>
+        </div>
+
+        <div id="dashboardClassStudentsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+          <!-- Kartu rincian siswa akan dirender di sini -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: BUKU KAS & REKAPITULASI -->
+    <section id="pane-bukuKas" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Filter Buku Kas & Rekapitulasi</h2>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Rekap</button>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Dari Tanggal</label>
+            <input type="date" id="filterStartDate" style="display: block; padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 600;">Sampai Tanggal</label>
+            <input type="date" id="filterEndDate" style="display: block; padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+          </div>
+          <div style="align-self: flex-end;">
+            <button class="btn btn-primary" onclick="loadCashBook()">Terapkan Filter</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>No Kwitansi</th>
+                <th>Tanggal/Jam</th>
+                <th>NIS</th>
+                <th>Nama Siswa</th>
+                <th>Pos Biaya / Bulan</th>
+                <th style="text-align: right;">Nominal</th>
+                <th>Metode</th>
+                <th>Kasir</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="cashBookTableBody">
+              <tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Memuat riwayat transaksi...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: BUKU BAYAR SISWA MINI -->
+    <section id="pane-tabungan" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Buku Riwayat & Kartu Pembayaran Siswa</h2>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="Masukkan NIS atau Nama Siswa..." oninput="onSearchLedgerStudent(this.value)">
+        </div>
+        <div id="ledgerStudentResults" style="display: none; max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;"></div>
+
+        <div id="ledgerDetailContainer" style="display: none;">
+          <!-- Detail data siswa & progress tagihan -->
+          <div style="background: #f8fafc; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h3 id="ledgerName" style="font-size: 18px; font-weight: 700;">-</h3>
+                <p style="font-size: 13px; color: var(--text-muted);">NIS: <span id="ledgerNis" class="font-mono">-</span> · Kelas: <span id="ledgerKelas">-</span></p>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 12px; color: var(--text-muted);">Sisa Tunggakan:</span>
+                <h4 id="ledgerRemainingTotal" class="font-mono" style="font-size: 20px; color: var(--danger); font-weight: 700;">Rp 0</h4>
+              </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-secondary" onclick="sendWhatsAppBillingNotice()" style="background: #25D366; color: white;">📲 Kirim Rincian Tagihan ke WA</button>
+              <button class="btn btn-secondary" onclick="unduhKartuSiswa()">📄 Unduh Kartu Siswa</button>
+              <button class="btn btn-primary" onclick="cetakKartuSiswa()">🖨️ Cetak Kartu</button>
+            </div>
+          </div>
+
+          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Status Pos Biaya</h3>
+          <div class="table-container" style="margin-bottom: 20px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pos Biaya</th>
+                  <th>Kategori</th>
+                  <th style="text-align: right;">Target Biaya</th>
+                  <th style="text-align: right;">Sudah Dibayar</th>
+                  <th style="text-align: right;">Sisa Tagihan</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerPosTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PENGATURAN & BACKUP -->
+    <section id="pane-pengaturan" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Pengaturan Sistem & Database</h2>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Konfigurasi terhubung langsung dengan Google Sheets (Sheet: <strong>PENGATURAN</strong>).
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Cadangan Database Otomatis</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+              Membuat salinan snapshot Google Sheets ke folder Google Drive <code>SiKeSe_Backup</code>.
+            </p>
+            <button class="btn btn-primary" onclick="handleBackupNow()">💾 Backup Database Sekarang</button>
+          </div>
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Inisialisasi Ulang Struktur Sheet</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+              Memverifikasi ketersediaan sheet SISWA, POS_BIAYA, TRANSAKSI, dan PENGATURAN.
+            </p>
+            <button class="btn btn-secondary" onclick="handleInitDatabase()">⚙️ Periksa & Inisialisasi Sheet</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: PANDUAN & TUTORIAL PENGGUNAAN -->
+    <section id="pane-tutorial" class="tab-pane">
+      <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%); color: white; border: none; padding: 28px;">
+        <span style="display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; padding: 4px 10px; border-radius: 9999px; margin-bottom: 12px;">
+          📖 Pusat Edukasi & Dokumentasi Resmi SiKeSe
+        </span>
+        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Buku Panduan & Tutorial Penggunaan Lengkap</h2>
+        <p style="font-size: 13px; color: #cbd5e1; max-width: 750px; line-height: 1.6;">
+          Dokumentasi operasional terperinci per menu dan rincian fitur untuk Petugas Kasir Loket dan Kepala Sekolah SMKS PGRI 1 Kota Sukabumi. Gunakan kolom pencarian atau tombol filter menu di bawah untuk menemukan panduan yang Anda butuhkan.
+        </p>
+      </div>
+
+      <!-- KOTAK PENCARIAN & FILTER KATEGORI -->
+      <input type="text" id="tutorialSearchInput" class="tutorial-search-box" oninput="handleTutorialSearch()" placeholder="🔍 Cari panduan menu atau fitur... (contoh: undo, kwitansi, spp, pin, wa, kartu siswa, backup)" />
+
+      <div class="tutorial-filters">
+        <button class="tutorial-pill active" onclick="filterTutorialCategory('all', this)">📚 Semua Menu</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('kasir', this)">💳 1. Kasir & Pembayaran</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('dashboard', this)">📊 2. Dashboard & Grafik</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('bukukas', this)">📑 3. Buku Kas & Undo</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('bukusiswa', this)">🎓 4. Buku Bayar Siswa</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('pengaturan', this)">⚙️ 5. Pengaturan & PIN</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('gas', this)">☁️ Integrasi Google Sheets</button>
+        <button class="tutorial-pill" onclick="filterTutorialCategory('faq', this)">❓ FAQ & Solusi Kendala</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px;" id="tutorialContainer">
+        
+        <!-- PANDUAN 1: MENU KASIR & PEMBAYARAN -->
+        <div class="card tutorial-card" data-category="kasir" style="border-left: 4px solid #059669;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge">MENU UTAMA 1</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">💳 Menu Kasir & Pembayaran Keuangan</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Loket transaksi harian untuk melayani pembayaran langsung dari siswa dan wali murid, penerbitan kwitansi, serta notifikasi WhatsApp.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #ecfdf5; color: #047857; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Hak Akses: Kasir & Kepsek</span>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--primary);">Rincian Fitur-Fitur di Menu Kasir:</h4>
+          
+          <div class="feature-item">
+            <strong>1.1. Pencarian Cepat Data Siswa (Live Autocomplete):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Ketikkan NIS (contoh: <code>24251001</code>) atau sebagian nama siswa pada kolom "Cari NIS / Nama Siswa". Sistem secara instan menampilkan daftar siswa yang cocok. Klik nama siswa yang dituju untuk langsung memuat data profil dan rincian kewajibannya.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.2. Rangkuman Profil Siswa & Total Tunggakan:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Setelah siswa dipilih, kartu profil akan menampilkan Nama Lengkap, NIS, NISN, Rombel/Kelas, Jurusan, Nomor WhatsApp Wali Murid, serta kotak merah berisi <strong>Sisa Total Kewajiban</strong> secara akumulatif.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.3. Matriks SPP Bulanan (12 Bulan Juli s/d Juni):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Menyajikan grid 12 kotak bulan kalender tahun ajaran. Kotak hijau bertuliskan <em>LUNAS</em> menandakan bulan tersebut sudah dibayar lengkap dengan informasi tanggal dan nomor kwitansi. Kotak yang belum lunas dapat langsung diklik untuk dimasukkan ke keranjang pembayaran.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.4. Filter Tahun Ajaran SPP (Multi-Year):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tersedia dropdown pilihan tahun ajaran (2025, 2026, 2027). Kasir dapat berpindah tahun dengan mudah untuk melayani pelunasan tunggakan SPP tahun lalu ataupun setoran tahun berjalan.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.5. Pos Biaya Bebas / Non-SPP (DSP, PKL, Kegiatan, Sarpras, dll):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Menampilkan pos-pos biaya non-bulanan yang secara otomatis difilter sesuai tingkatan kelas siswa. Klik tombol <strong>"+ Cicilan"</strong> untuk memasukkan nominal pembayaran fleksibel (angsuran bertahap sesuai kesanggupan wali murid). Sistem memiliki validasi otomatis yang mencegah input nominal melebihi sisa tagihan.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.6. Keranjang Pembayaran Multi-Item (Atomic Cart):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Kasir dapat menggabungkan pembayaran beberapa pos biaya sekaligus dalam satu transaksi tunggal (misalnya: bayar SPP 2 bulan + cicilan DSP Rp 500.000). Total pembayaran dihitung otomatis, dan setiap item dapat dihapus jika terjadi salah klik.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.7. Pilihan Metode Pembayaran & Catatan Kasir:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tersedia opsi metode: <strong>Tunai (Cash)</strong> untuk pembayaran fisik di loket, <strong>Transfer Bank BRI</strong> untuk setoran rekening, dan <strong>QRIS</strong>. Kasir juga dapat menambahkan keterangan (misal: "Titipan wali murid").
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.8. Penomoran Kwitansi Otomatis & Unik (KW-YYYYMMDD-XXXX):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Sistem menggunakan generator penomoran otomatis berurutan dengan kunci transaksi (*LockService*) untuk memastikan nomor kwitansi tidak pernah dobel atau bentrok meski diakses bersamaan.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.9. Cetak Kwitansi Fisik & Unduh Dokumen:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Seketika setelah transaksi diproses, modal pratinjau kwitansi muncul otomatis. Kasir dapat langsung mengklik <strong>"🖨️ Cetak Kwitansi"</strong> (kompatibel dengan printer Thermal POS 58mm/80mm maupun printer standar A5/A4) atau <strong>"📄 Unduh Kwitansi"</strong>.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>1.10. Kirim Notifikasi Kwitansi via WhatsApp Otomatis:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tombol <strong>"📲 Kirim WA"</strong> akan membuka aplikasi WhatsApp dengan pesan bukti pembayaran resmi yang otomatis terisi lengkap (Nama Siswa, NIS, Nomor Kwitansi, Rincian Pembayaran, Total, Tanggal/Jam, dan Nama Kasir).
+            </p>
+          </div>
+
+          <div class="sop-box">
+            <strong>📌 Prosedur Operasional Standar (SOP) Transaksi Kasir:</strong>
+            <ol style="margin-top: 6px; padding-left: 20px;">
+              <li>Tanyakan NIS atau nama siswa kepada penyetor/wali murid, lalu cari di kolom pencarian.</li>
+              <li>Pilih bulan SPP yang ingin dilunasi atau klik "+ Cicilan" pada pos non-SPP untuk memasukkan nominal.</li>
+              <li>Pilih metode pembayaran (Tunai / Transfer / QRIS) dan pastikan uang fisik atau bukti transfer telah diverifikasi.</li>
+              <li>Klik tombol <strong>"Proses Pembayaran"</strong>.</li>
+              <li>Cetak kwitansi fisik untuk diserahkan ke wali murid dan klik "Kirim WA" sebagai arsip digital ke ponsel wali murid.</li>
+            </ol>
+          </div>
+
+          <div class="tip-box">
+            💡 <strong>Tips Kasir:</strong> Pastikan selalu mengecek nomor WhatsApp wali murid pada profil siswa. Format nomor 08... akan otomatis disesuaikan sistem menjadi 628... untuk pengiriman WhatsApp.
+          </div>
+        </div>
+
+        <!-- PANDUAN 2: MENU DASHBOARD & GRAFIK -->
+        <div class="card tutorial-card" data-category="dashboard" style="border-left: 4px solid #2563eb;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">MENU UTAMA 2</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">📊 Menu Dashboard Finansial & Grafik</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Pusat monitoring dan pengawasan arus kas masuk, grafik pendapatan, dan live audit transaksi terkini.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #eff6ff; color: #1d4ed8; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Hak Akses: Kasir & Kepsek</span>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--primary);">Rincian Fitur-Fitur di Menu Dashboard:</h4>
+
+          <div class="feature-item">
+            <strong>2.1. Enam Kartu Indikator Finansial Utama (KPI Kas):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Menampilkan metrik utama secara real-time:
+              <br>• <strong>Penerimaan Hari Ini:</strong> Total uang masuk yang diterima loket kasir pada hari ini.
+              <br>• <strong>Penerimaan Bulan Ini:</strong> Akumulasi penerimaan kas pada bulan kalender berjalan.
+              <br>• <strong>Kas Tunai Kasir:</strong> Total uang fisik tunai yang wajib ada di laci kasir/brankas loket.
+              <br>• <strong>Penerimaan Transfer:</strong> Total penerimaan non-tunai di rekening bank sekolah.
+              <br>• <strong>Total Transaksi:</strong> Jumlah kwitansi sah yang telah diterbitkan.
+              <br>• <strong>Total Siswa Terdaftar:</strong> Jumlah total siswa aktif dalam database sekolah.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>2.2. Diagram Visual Komposisi & Tren Penerimaan:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Visualisasi grafik batang interaktif yang membandingkan perolehan kas antar pos biaya (proporsi SPP, DSP, PKL, dll) untuk memudahkan evaluasi pos mana yang realisasinya paling tinggi.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>2.3. Tabel Live Audit 15 Transaksi Masuk Terkini:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Memuat 15 transaksi pembayaran paling baru secara otomatis lengkap dengan waktu transaksi, nama siswa, pos biaya, nominal, dan petugas kasir yang melayani.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>2.4. Sinkronisasi Data Real-Time:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tombol "🔄 Muat Ulang Data" di pojok kanan atas memungkinkan kasir dan kepala sekolah memperbarui data dari database Google Spreadsheet secara instan tanpa perlu reload halaman browser.
+            </p>
+          </div>
+
+          <div class="tip-box">
+            💡 <strong>Panduan untuk Kepala Sekolah:</strong> Gunakan menu Dashboard untuk mengawasi rasio pembayaran tunai vs transfer serta mengevaluasi kelancaran pembayaran SPP bulanan setiap akhir pekan.
+          </div>
+        </div>
+
+        <!-- PANDUAN 3: MENU BUKU KAS & UNDO -->
+        <div class="card tutorial-card" data-category="bukukas" style="border-left: 4px solid #d97706;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">MENU UTAMA 3</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">📑 Menu Buku Kas & Rekapitulasi Pembukuan</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Buku jurnal mutasi kas masuk, penyaringan laporan keuangan, dan fasilitas koreksi/pembatalan transaksi (Undo).
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #fffbeb; color: #b45309; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Hak Akses: Kasir & Kepsek</span>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--primary);">Rincian Fitur-Fitur di Menu Buku Kas:</h4>
+
+          <div class="feature-item">
+            <strong>3.1. Filter Fleksibel Periode Tanggal & Kategori Pos Biaya:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Dapat menyaring mutasi kas harian, mingguan, bulanan, atau semester dengan memilih "Tanggal Mulai" dan "Tanggal Selesai", serta dropdown pilihan pos biaya spesifik (misal: hanya pos SPP, atau Semua Pos).
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>3.2. Rekapitulasi Kas Masuk Bersih vs Mutasi Bank:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Menyajikan 4 ringkasan finansial pada periode terpilih:
+              <br>• <strong>Total Uang Masuk Bersih:</strong> Pendapatan kas sah setelah dikurangi transaksi yang dibatalkan.
+              <br>• <strong>Total Kas Tunai:</strong> Jumlah fisik uang tunai di loket kasir.
+              <br>• <strong>Total Transfer Bank:</strong> Jumlah mutasi rekening bank sekolah.
+              <br>• <strong>Total Batal (Void):</strong> Nilai transaksi yang dibatalkan untuk keperluan rekonsiliasi kas.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>3.3. Tabel Jurnal Mutasi Kas Terinci (Clean Display):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Kolom tersusun rapi: No. Kwitansi, Tanggal & Jam bersih (<code>YYYY-MM-DD HH:mm</code>), NIS, Nama Siswa, Pos Biaya / Bulan bersih, Nominal Rupiah, Metode, Nama Kasir, dan Status Transaksi (Sukses / Batal).
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>3.4. Fitur Pembatalan Transaksi (Aksi Undo Transaksi) Berotorisasi PIN:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Jika kasir salah memasukkan nominal, salah memilih nama siswa, atau wali murid membatalkan transaksi, kasir dapat mengklik tombol merah <strong>"Undo"</strong> pada baris transaksi bersangkutan. Sistem mewajibkan memasukkan PIN Otorisasi (PIN Kasir atau PIN Kepsek) dan mencantumkan alasan pembatalan tertulis.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>3.5. Pemulihan Saldo Tunggakan Siswa Secara Otomatis 100% Riil:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Ketika transaksi dibatalkan, status kwitansi seketika dicoret menjadi <em>Batal</em>. Uang kas otomatis dikurangi, dan status tunggakan siswa tersebut otomatis dipulihkan kembali (bulan SPP kembali belum bayar atau sisa cicilan bertambah kembali) secara instan dan riil.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>3.6. Cetak Laporan Rekapitulasi Pembukuan Kas Resmi:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tombol "🖨️ Cetak Rekap" mencetak laporan jurnal kas resmi berformat rapi lengkap dengan Kop Surat Lembaga SMKS PGRI 1 Kota Sukabumi, ringkasan per pos, dan lembar tanda tangan Kepala Sekolah serta Bendahara Keuangan.
+            </p>
+          </div>
+
+          <div class="sop-box">
+            <strong>📌 SOP Pembatalan Transaksi (Undo Transaksi):</strong>
+            <ol style="margin-top: 6px; padding-left: 20px;">
+              <li>Cari nomor kwitansi yang salah input di tabel Buku Kas.</li>
+              <li>Klik tombol merah <strong>"Undo"</strong> di sebelah kanan baris transaksi.</li>
+              <li>Masukkan PIN Otorisasi Anda (PIN Kasir atau PIN Kepsek) pada jendela dialog.</li>
+              <li>Tuliskan alasan pembatalan yang jelas (contoh: "Salah input nominal uang" atau "Salah pilih siswa").</li>
+              <li>Konfirmasi pembatalan. Seluruh riwayat pembatalan dicatat secara permanen di Audit Log sistem.</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- PANDUAN 4: MENU BUKU BAYAR SISWA -->
+        <div class="card tutorial-card" data-category="bukusiswa" style="border-left: 4px solid #8b5cf6;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">MENU UTAMA 4</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">🎓 Menu Buku Bayar Siswa (Student Financial Ledger)</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Buku kendali keuangan individual siswa dari awal masuk hingga lulus, kartu kendali SPP, dan surat penagihan via WhatsApp.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #f5f3ff; color: #6d28d9; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Hak Akses: Kasir & Kepsek</span>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--primary);">Rincian Fitur-Fitur di Menu Buku Bayar Siswa:</h4>
+
+          <div class="feature-item">
+            <strong>4.1. Pencarian & Profil Lengkap Siswa:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Cari siswa berdasarkan NIS atau Nama. Sistem menampilkan data diri lengkap: Nama, NIS, NISN, Rombel/Kelas, Jurusan, Nomor WhatsApp Wali Murid, dan Alamat tempat tinggal.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>4.2. Kotak Akumulasi Kewajiban Finansial:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Rangkuman tiga angka penting: <strong>Total Seluruh Kewajiban</strong>, <strong>Total Biaya Yang Sudah Dibayar</strong>, dan <strong>Sisa Total Tunggakan</strong> siswa tersebut dari semua pos biaya.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>4.3. Tabel Matriks Seluruh Pos Biaya (Status Lunas / Belum):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Menampilkan rincian setiap pos biaya (SPP 12 Bulan, DSP, PKL, Kegiatan, dll) mencakup target biaya, total sudah disetor, sisa kewajiban, dan badge status <em>LUNAS</em> hijau atau <em>Belum Lunas</em> merah.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>4.4. Rekam Riwayat Pembayaran Individual Siswa:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Daftar kronologis seluruh transaksi setoran yang pernah dilakukan siswa tersebut sejak awal terdaftar hingga transaksi terakhir lengkap dengan nomor kwitansi, tanggal, pos biaya, nominal, dan petugas kasir.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>4.5. Cetak Kartu Pembayaran Siswa Resmi (Format A4):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tombol <strong>"🖨️ Cetak Kartu Siswa"</strong> mencetak Kartu Pembayaran Keuangan resmi format standar A4 dengan Kop Lembaga SMKS PGRI 1 Kota Sukabumi, tabel rincian kewajiban, nomor rekening resmi Bank BRI sekolah, dan kolom tanda tangan bendahara. Kartu ini digunakan sebagai syarat administrasi pengambilan kartu ujian atau rapor.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>4.6. Kirim Surat Tagihan via WhatsApp Resmi ke Wali Murid:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Tombol <strong>"📲 Kirim WA Tagihan"</strong> otomatis menyusun draf pesan penagihan yang santun dan resmi, memuat rincian pos yang belum lunas per tanggal hari ini, total kewajiban, dan nomor rekening resmi Bank BRI (<code>009201011149539 A.N. SMK PGRI 1</code>) langsung ke aplikasi WhatsApp wali murid.
+            </p>
+          </div>
+
+          <div class="tip-box">
+            💡 <strong>Tips Pelayanan Wali Murid:</strong> Saat wali murid datang menanyakan status pembayaran anaknya, buka menu ini untuk langsung menunjukkan atau mencetakkan kartu rekaman pembayaran siswa dalam hitungan detik.
+          </div>
+        </div>
+
+        <!-- PANDUAN 5: MENU PENGATURAN & BACKUP -->
+        <div class="card tutorial-card" data-category="pengaturan" style="border-left: 4px solid #64748b;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">MENU UTAMA 5</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">⚙️ Menu Pengaturan Lembaga, PIN & Backup</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Pusat konfigurasi identitas sekolah, rekening bank resmi, manajemen PIN keamanan, master pos biaya, dan backup database.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #f1f5f9; color: #475569; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Hak Akses: Kasir & Kepsek</span>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--primary);">Rincian Fitur-Fitur di Menu Pengaturan:</h4>
+
+          <div class="feature-item">
+            <strong>5.1. Pengaturan Identitas Lembaga Sekolah:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Dapat mengedit Nama Sekolah (SMKS PGRI 1 Kota Sukabumi), Alamat Lengkap, Nomor Telepon, Nama Kepala Sekolah, dan Nama Bendahara/Kasir Utama. Data ini langsung terhubung dan otomatis tercetak di seluruh kop kwitansi dan laporan.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>5.2. Konfigurasi Rekening Bank Resmi Sekolah:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Mengatur Nama Bank (Bank BRI), Nomor Rekening Resmi, dan Atas Nama Rekening. Informasi ini otomatis tercetak pada lembar kwitansi dan draf pesan penagihan WhatsApp ke wali murid.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>5.3. Manajemen Keamanan PIN Masuk (Ubah PIN Kasir & Kepsek):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Ubah <strong>PIN Kasir</strong> (default: <code>1234</code>) dan <strong>PIN Kepala Sekolah</strong> (default: <code>8899</code>) dengan 4–6 digit angka baru. Klik "Simpan Pengaturan" agar PIN baru langsung aktif untuk login berikutnya.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>5.4. Pengelolaan Master Pos Biaya Sekolah:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Daftar master pos biaya sekolah (SPP, DSP, PKL, Kegiatan, dll). Menentukan jenis pos (Bulanan vs Bebas Cicilan), target tingkatan kelas (Semua Kelas, X, XI, XII), dan nominal default.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>5.5. Pencadangan & Pemulihan Database (Backup & Restore):</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Fasilitas untuk mengunduh salinan cadangan database dalam format file JSON ke komputer lokal. Berguna sebagai cadangan keamanan data jika terjadi kendala pada akun Google.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <strong>5.6. Audit Log Rekam Jejak Digital Kasir:</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.6;">
+              Mencatat seluruh rekam jejak aktivitas penting (login pengguna, transaksi masuk, pembatalan kwitansi, perubahan PIN/pengaturan) lengkap dengan timestamp waktu dan nama petugas untuk menjamin akuntabilitas.
+            </p>
+          </div>
+
+          <div class="tip-box">
+            🔒 <strong>Keamanan:</strong> Jangan pernah memberitahukan PIN Kepala Sekolah kepada pihak lain karena PIN Kepala Sekolah memiliki hak otorisasi supervisi tertinggi.
+          </div>
+        </div>
+
+        <!-- PANDUAN 6: INTEGRASI GOOGLE SHEETS & GAS -->
+        <div class="card tutorial-card" data-category="gas" style="border-left: 4px solid #0284c7;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">PANDUAN TEKNIS</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">☁️ Panduan Integrasi Database Google Sheets (GAS)</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Petunjuk deployment Google Apps Script agar Web App terhubung langsung ke Google Spreadsheet sekolah tanpa biaya server.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #f0f9ff; color: #0369a1; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Administrator Database</span>
+          </div>
+
+          <ol style="font-size: 13px; color: var(--text); padding-left: 20px; line-height: 1.8;">
+            <li><strong>Buka Google Drive:</strong> Buka spreadsheet database keuangan sekolah Anda di Google Drive.</li>
+            <li><strong>Buka Editor Script:</strong> Klik menu <em>Ekstensi</em> &gt; <em>Apps Script</em> pada spreadsheet Anda.</li>
+            <li><strong>Pasang File Code.gs:</strong> Buka file <code>Code.gs</code> di editor Apps Script, tempelkan kode Apps Script terbaru, lalu simpan (Ctrl+S).</li>
+            <li><strong>Pasang File Index_GAS.html:</strong> Tambahkan file HTML baru bernama <code>Index_GAS.html</code> (atau <code>index.html</code>), tempelkan kode antarmuka HTML terbaru, lalu simpan (Ctrl+S).</li>
+            <li><strong>Inisialisasi Database:</strong> Pada dropdown fungsi Apps Script, pilih fungsi <code>setupInitialDatabase</code> dan klik <strong>Jalankan (Run)</strong> untuk membuat sheet otomatis (SISWA, POS_BIAYA, TRANSAKSI, PENGATURAN, AUDIT_LOG).</li>
+            <li><strong>Terapkan Aplikasi Web (Deploy):</strong> Klik tombol biru <strong>Terapkan (Deploy)</strong> &gt; <strong>Kelola penerapan (Manage deployments)</strong> &gt; Edit (Pensil) &gt; Pilih <strong>Versi baru (New version)</strong> &gt; Klik <strong>Terapkan</strong>. Buka URL Web App yang dihasilkan di browser.</li>
+          </ol>
+
+          <div class="tip-box">
+            💡 <strong>Keuntungan Google Sheets:</strong> Data keuangan tersimpan 100% aman di Google Drive akun sekolah Anda, dapat diakses dari mana saja tanpa biaya bulanan hosting/server.
+          </div>
+        </div>
+
+        <!-- PANDUAN 7: FAQ & TROUBLESHOOTING -->
+        <div class="card tutorial-card" data-category="faq" style="border-left: 4px solid #ef4444;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <span class="feature-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">BANTUAN OPERASIONAL</span>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--primary);">❓ Tanya Jawab & Kendala Operasional (FAQ)</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Jawaban atas pertanyaan teknis dan penanganan kendala yang paling sering dihadapi petugas kasir loket.
+              </p>
+            </div>
+            <span style="font-size: 11px; background: #fef2f2; color: #b91c1c; font-weight: 700; padding: 4px 10px; border-radius: 6px;">Troubleshooting</span>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>1. Bagaimana jika kasir salah mengetik nominal uang atau salah pilih siswa?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Buka menu <strong>"Buku Kas & Rekap"</strong>, temukan transaksi yang salah tersebut, lalu klik tombol merah <strong>"Undo"</strong> di sebelah kanan. Masukkan PIN Otorisasi Anda dan tuliskan alasan pembatalan. Status kwitansi akan otomatis dibatalkan, saldo kas disesuaikan, dan saldo tunggakan siswa tersebut otomatis kembali bertambah secara riil. Setelah itu, buat transaksi baru dengan nominal atau siswa yang benar di menu Kasir.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>2. Apakah bukti kwitansi transaksi yang sudah lampau bisa dicetak ulang?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Bisa! Buka menu <strong>"Buku Bayar Siswa"</strong>, cari siswa yang bersangkutan. Pada tabel riwayat setoran siswa di bagian bawah, Anda dapat melihat seluruh kwitansi yang pernah diterbitkan lengkap dengan nomor kwitansi, tanggal, dan pos biayanya. Anda juga dapat mencetak lembar Kartu Pembayaran Siswa resmi.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>3. Bagaimana cara mencetak kwitansi di printer thermal kasir (kertas gulung)?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Saat jendela cetak browser muncul setelah mengklik "Cetak Kwitansi", pada opsi printer pilih printer Thermal kasir Anda (misal: POS-58 atau POS-80). Pada pengaturan kertas pilih ukuran 58mm atau 80mm, serta atur margin ke "None" atau "Minimum". Layout kwitansi SiKeSe dirancang otomatis menyesuaikan lebar kertas thermal.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>4. Mengapa tombol WhatsApp tidak membuka obrolan ke wali murid?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Pastikan kolom nomor HP wali murid pada data siswa sudah terisi dengan benar. Nomor dapat diawali angka 08... atau 628... Sistem secara otomatis akan mengonversinya ke format tautan internasional (<code>wa.me/628...</code>). Jika browser memblokir pop-up, izinkan pop-up untuk situs aplikasi SiKeSe.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>5. Bagaimana jika kasir lupa PIN Otorisasi Masuk?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Kepala Sekolah dapat login menggunakan PIN Kepala Sekolah (default: <code>8899</code>), lalu membuka menu <strong>"Pengaturan & Backup"</strong> untuk melihat atau mengganti PIN Kasir. Jika kedua PIN terlupa, buka Google Spreadsheet database Anda di Google Drive, lihat sheet <strong>"PENGATURAN"</strong> baris <code>PIN_KASIR</code> atau <code>PIN_KEPSEK</code> pada kolom B.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaqAccordion(this)">
+              <span>6. Apakah aplikasi SiKeSe aman digunakan bersamaan di beberapa loket komputer?</span>
+              <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-answer">
+              Sangat aman! SiKeSe dilengkapi teknologi <em>LockService</em> pada backend Google Apps Script. Setiap transaksi pembayaran dikunci secara atomik selama proses penulisan sehingga nomor kwitansi dijamin unik berurutan dan tidak akan pernah terjadi transaksi bentrok atau tumpang tindih.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL BUKTI KWITANSI -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="modal-content" id="printArea">
+      <div style="text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 14px; margin-bottom: 14px;">
+        <h2 id="receiptSchoolName" style="font-size: 16px; font-weight: 700; color: var(--primary);">KWITANSI PEMBAYARAN</h2>
+        <p id="receiptSchoolAddr" style="font-size: 11px; color: var(--text-muted);">-</p>
+      </div>
+
+      <div style="font-size: 12px; margin-bottom: 14px; line-height: 1.6;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>No Kwitansi:</span>
+          <strong id="rcptNo" class="font-mono">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Waktu:</span>
+          <span id="rcptTime">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>NIS / Nama:</span>
+          <strong id="rcptStudent">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Kelas:</span>
+          <span id="rcptClass">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Kasir:</span>
+          <span id="rcptCashier">-</span>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 14px;">
+        <div id="rcptItemsList" style="font-size: 12px;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; border-top: 2px solid var(--primary); padding-top: 10px; margin-bottom: 20px;">
+        <span>TOTAL DIBAYAR:</span>
+        <span id="rcptTotal" class="font-mono" style="color: var(--accent);">Rp 0</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="closeReceiptModal()">Tutup</button>
+        <button class="btn btn-secondary" onclick="unduhDokumenKwitansi()">📄 Unduh Kwitansi</button>
+        <button class="btn btn-primary" onclick="cetakKwitansi()">🖨️ Cetak Kwitansi</button>
+        <a id="btnRcptWa" href="#" target="_blank" class="btn" style="background: #25D366; color: white;">📲 Kirim WA</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification">Notifikasi</div>
+
+  <script>
+    // State Aplikasi
+    var AppState = {
+      user: null,
+      initialData: null,
+      selectedStudent: null,
+      cart: [],
+      chartInstance: null
+    };
+
+    var BULAN_SPP_LIST = [
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni"
+    ];
+
+    // Helper format Rupiah
+    function formatRp(num) {
+      return "Rp " + (Number(num) || 0).toLocaleString("id-ID");
+    }
+
+    // Helper format Tanggal & Jam Bersih (mencegah format tanggal panjang Google Sheets)
+    function formatCleanDate(tglStr) {
+      if (!tglStr) return "";
+      var str = String(tglStr).trim();
+      var m = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (m) {
+        return m[1] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[3]).slice(-2);
+      }
+      var m2 = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (m2) {
+        return m2[3] + "-" + ("0" + m2[2]).slice(-2) + "-" + ("0" + m2[1]).slice(-2);
+      }
+      if (str.length > 10 && (str.indexOf("GMT") !== -1 || str.indexOf("WIB") !== -1)) {
+        var d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+        }
+      }
+      return str.length > 10 ? str.substring(0, 10) : str;
+    }
+
+    function formatCleanTime(jamStr) {
+      if (!jamStr) return "00:00";
+      var str = String(jamStr).trim();
+      var m = str.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+      if (m) {
+        return ("0" + m[1]).slice(-2) + ":" + m[2];
+      }
+      return str.length > 8 ? str.substring(0, 5) : str;
+    }
+
+    function formatCleanMonth(monthVal) {
+      if (!monthVal || monthVal === "-") return "-";
+      var indonesianMonths = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      if (monthVal instanceof Date && !isNaN(monthVal.getTime())) {
+        return indonesianMonths[monthVal.getMonth()] + " " + monthVal.getFullYear();
+      }
+      var str = String(monthVal).trim();
+      if (!str || str === "-") return "-";
+      if (str.indexOf("GMT") !== -1 || str.indexOf("WIB") !== -1 || /^[A-Za-z]{3}\s[A-Za-z]{3}\s\d{1,2}\s\d{4}/.test(str)) {
+        var d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          return indonesianMonths[d.getMonth()] + " " + d.getFullYear();
+        }
+      }
+      var isoMatch = str.match(/^(\d{4})-(\d{1,2})/);
+      if (isoMatch) {
+        var imIdx = parseInt(isoMatch[2], 10) - 1;
+        if (imIdx >= 0 && imIdx < 12) {
+          return indonesianMonths[imIdx] + " " + isoMatch[1];
+        }
+      }
+      return str;
+    }
+
+    function formatCleanPosBiaya(namaPos, bulan) {
+      var np = String(namaPos || "").trim();
+      var bln = formatCleanMonth(bulan);
+      
+      // Jika namaPos sudah mencantumkan bulan atau format lengkap (misal "SPP Bulan Oktober (2026)")
+      if (np.indexOf("Bulan") !== -1 || np.indexOf("(") !== -1) {
+        return np;
+      }
+      
+      // Jika namaPos adalah SPP dan ada keterangan bulan
+      if (bln && bln !== "-") {
+        if (np === "SPP" || np === "POS-SPP" || np === "SPP Bulanan") {
+          return "SPP Bulan " + bln;
+        }
+        return np + " (" + bln + ")";
+      }
+      
+      return np;
+    }
+
+    // Helper Toast
+    function showToast(msg) {
+      var t = document.getElementById("toastNotification");
+      t.innerText = msg;
+      t.style.display = "block";
+      setTimeout(function() { t.style.display = "none"; }, 3500);
+    }
+
+    // Login Handler
+    function handleLogin() {
+      var pin = document.getElementById("pinInput").value;
+      if (!pin) {
+        showToast("Silakan masukkan PIN!");
+        return;
+      }
+      
+      var btn = document.getElementById("btnLogin");
+      btn.disabled = true;
+      btn.innerText = "Memverifikasi...";
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          AppState.user = response;
+          document.getElementById("loginOverlay").classList.add("hidden");
+          document.getElementById("userDisplayName").innerText = response.nama;
+          document.getElementById("userRoleBadge").innerText = response.role === "KASIR" ? "Kasir Keuangan" : "Kepala Sekolah";
+          showToast("Selamat datang, " + response.nama);
+          btn.disabled = false;
+          btn.innerText = "Masuk ke Sistem";
+          loadInitialData();
+        })
+        .withFailureHandler(function(err) {
+          showToast("Login gagal: " + err.message);
+          btn.disabled = false;
+          btn.innerText = "Masuk ke Sistem";
+        })
+        .loginWithPin(pin);
+    }
+
+    // Logout
+    function handleLogout() {
+      AppState.user = null;
+      document.getElementById("pinInput").value = "";
+      document.getElementById("loginOverlay").classList.remove("hidden");
+    }
+
+    // Tab Navigation
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab-pane").forEach(function(pane) { pane.classList.remove("active"); });
+      document.querySelectorAll(".tab-btn").forEach(function(btn) { btn.classList.remove("active"); });
+
+      var targetPane = document.getElementById("pane-" + tabName);
+      if (targetPane) targetPane.classList.add("active");
+
+      event.currentTarget.classList.add("active");
+
+      if (tabName === "dashboard") {
+        loadChartData();
+      } else if (tabName === "bukuKas") {
+        loadCashBook();
+      } else if (tabName === "tabungan") {
+        if (!AppState.currentLedger && AppState.initialData && AppState.initialData.siswaList && AppState.initialData.siswaList.length > 0) {
+          selectLedgerStudent(AppState.initialData.siswaList[0].nis);
+        }
+      }
+    }
+
+    // Ambil Data Awal
+    function loadInitialData() {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          AppState.initialData = data;
+          if (data.settings && data.settings["NAMA_SEKOLAH"]) {
+            document.getElementById("schoolNameHeader").innerText = data.settings["NAMA_SEKOLAH"];
+          }
+          // Stats (6 Kartu Finansial)
+          document.getElementById("statToday").innerText = formatRp(data.summary.totalHariIni || 0);
+          document.getElementById("statThisMonth").innerText = formatRp(data.summary.totalBulanIni || 0);
+          document.getElementById("statTotalTunai").innerText = formatRp(data.summary.totalTunai || 0);
+          document.getElementById("statTotalTransfer").innerText = formatRp(data.summary.totalTransfer || 0);
+          document.getElementById("statTotalTrans").innerText = (data.summary.totalTransaksiCount || 0) + " Trx";
+          document.getElementById("statTotalStudents").innerText = (data.summary.totalSiswa || 0) + " Siswa";
+
+          if (document.getElementById("statTodaySub")) {
+            document.getElementById("statTodaySub").innerText =
+              "Tunai: " + formatRp(data.summary.totalTunaiHariIni || 0) + " · Non-Tunai: " + formatRp(data.summary.totalTransferHariIni || 0);
+          }
+          if (document.getElementById("statMonthSub")) {
+            document.getElementById("statMonthSub").innerText =
+              "Tunai: " + formatRp(data.summary.totalTunaiBulanIni || 0) + " · Non-Tunai: " + formatRp(data.summary.totalTransferBulanIni || 0);
+          }
+
+          // Otomatis muat grafik tren riil
+          loadChartData();
+
+          // Render Recent Transactions in Cashbook initially
+          renderCashBook(data.recentTransactions);
+
+          // Populate Dashboard Class Dropdown
+          if (data.siswaList) {
+            populateDashboardClasses(data.siswaList);
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal memuat data: " + err.message);
+        })
+        .getInitialData();
+    }
+
+    // Pencarian Siswa
+    function onSearchStudent(query) {
+      var resDiv = document.getElementById("studentSearchResults");
+      if (!query || query.length < 2) {
+        resDiv.style.display = "none";
+        return;
+      }
+      var students = AppState.initialData ? AppState.initialData.siswaList : [];
+      var filtered = students.filter(function(s) {
+        return s.nis.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+               s.nama.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+      });
+
+      if (filtered.length === 0) {
+        resDiv.innerHTML = "<div style='padding: 10px; font-size: 13px; color: #94a3b8;'>Siswa tidak ditemukan</div>";
+      } else {
+        resDiv.innerHTML = filtered.map(function(s) {
+          return "<div style='padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9;' onclick='selectStudent(\"" + s.nis + "\")'>" +
+                 "<strong>" + s.nama + "</strong> (" + s.kelas + ") - NIS: " + s.nis +
+                 "</div>";
+        }).join("");
+      }
+      resDiv.style.display = "block";
+    }
+
+    function getGradeLevel(kelas) {
+      if (!kelas) return "";
+      var k = String(kelas).trim().toUpperCase();
+      if (/\bXII\b|XII\s|^XII|12/i.test(k)) return "XII";
+      if (/\bXI\b|XI\s|^XI|11/i.test(k)) return "XI";
+      if (/\bX\b|X\s|^X|10/i.test(k)) return "X";
+      return "";
+    }
+
+    // Pilih Siswa
+    function selectStudent(nis) {
+      document.getElementById("studentSearchResults").style.display = "none";
+      document.getElementById("studentSearch").value = "";
+      
+      showToast("Mengambil status pembayaran siswa...");
+
+      google.script.run
+        .withSuccessHandler(function(ledger) {
+          AppState.selectedStudent = ledger;
+          document.getElementById("badgeStudentName").innerText = ledger.siswa.nama;
+          document.getElementById("badgeStudentNis").innerText = ledger.siswa.nis;
+          document.getElementById("badgeStudentKelas").innerText = ledger.siswa.kelas;
+          document.getElementById("badgeStudentJurusan").innerText = ledger.siswa.jurusan || "-";
+          
+          var grade = getGradeLevel(ledger.siswa.kelas);
+          document.getElementById("feeCardTitle").innerText = "2. Pilih Pos Biaya (Tingkat " + grade + ")";
+          document.getElementById("feeCardSubtitle").innerText = "Menampilkan pos biaya khusus Tingkat " + grade + " (SPP & DSP berlaku di semua tingkatan)";
+
+          document.getElementById("selectedStudentBadge").style.display = "flex";
+          document.getElementById("feeSelectionCard").style.display = "block";
+
+          renderFeeSelection(ledger);
+          AppState.cart = [];
+          renderCart();
+        })
+        .withFailureHandler(function(err) {
+          showToast("Error: " + err.message);
+        })
+        .getStudentLedger(nis, (document.getElementById("kasirSppYearFilter") ? document.getElementById("kasirSppYearFilter").value : "2026"));
+    }
+
+    function resetSelectedStudent() {
+      AppState.selectedStudent = null;
+      AppState.cart = [];
+      document.getElementById("selectedStudentBadge").style.display = "none";
+      document.getElementById("feeSelectionCard").style.display = "none";
+      renderCart();
+    }
+
+    function onKasirSppYearChange() {
+      if (!AppState.selectedStudent) return;
+      var yr = document.getElementById("kasirSppYearFilter").value;
+      showToast("Memuat status SPP Tahun " + yr + "...");
+      google.script.run
+        .withSuccessHandler(function(ledger) {
+          AppState.selectedStudent = ledger;
+          renderFeeSelection(ledger);
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal memuat SPP tahun: " + err.message);
+        })
+        .getStudentLedger(AppState.selectedStudent.siswa.nis, yr);
+    }
+
+    // Render Pilihan Pos Biaya Siswa
+    function renderFeeSelection(ledger) {
+      // 1. SPP
+      var sppPos = ledger.posStatus.find(function(p) { return p.idPos === "POS-SPP"; });
+      var sppGrid = document.getElementById("sppMonthGrid");
+      if (sppPos) {
+        var sppYear = document.getElementById("kasirSppYearFilter") ? document.getElementById("kasirSppYearFilter").value : "2026";
+        document.getElementById("sppTarifDisplay").innerText = formatRp(sppPos.nominalPerBulan) + " (Tahun " + sppYear + ")";
+        sppGrid.innerHTML = sppPos.sppMonths.map(function(m) {
+          var isLunas = m.isLunas;
+          var monthKey = m.bulan + " " + sppYear;
+          var inCart = AppState.cart.some(function(c) { return c.idPos === "POS-SPP" && c.bulan === monthKey; });
+          var cls = "month-pill";
+          if (isLunas) cls += " lunas";
+          if (inCart) cls += " selected";
+
+          return "<div class='" + cls + "' onclick='toggleSppCart(\"" + m.bulan + "\", " + sppPos.nominalPerBulan + ", " + isLunas + ")'>" +
+                 "<div>" + m.bulan + "</div>" +
+                 "<span class='month-status-tag font-mono'>" + (isLunas ? "✓ Lunas" : (inCart ? "Dipilih" : formatRp(sppPos.nominalPerBulan))) + "</span>" +
+                 "</div>";
+        }).join("");
+      }
+
+      // 2. Pos Non-SPP / Sistem Cicilan (DSP, PKL, Kurikulum, Kesiswaan, Sarpras)
+      var otherDiv = document.getElementById("otherPosList");
+      var nonSppList = ledger.posStatus.filter(function(p) { return p.idPos !== "POS-SPP"; });
+
+      otherDiv.innerHTML = nonSppList.map(function(pos) {
+        var isLunas = pos.sisaTagihan === 0;
+        return "<div style='display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: white;'>" +
+               "<div>" +
+               "<div style='display: flex; align-items: center; gap: 6px;'>" +
+               "<strong>" + pos.namaPos + "</strong>" +
+               "<span style='font-size: 10px; background: #eff6ff; color: #1d4ed8; padding: 1px 5px; border-radius: 4px;'>Cicilan</span>" +
+               "</div>" +
+               "<div style='font-size: 12px; color: var(--text-muted); margin-top: 2px;'>" +
+               "Tarif Total: " + formatRp(pos.totalTarget) + " · Terbayar: " + formatRp(pos.totalBayar) + " · Sisa Cicilan: <strong class='font-mono' style='color: var(--danger);'>" + formatRp(pos.sisaTagihan) + "</strong>" +
+               "</div>" +
+               "</div>" +
+               "<div>" +
+               (isLunas ? "<span class='tag-lunas'>✓ Lunas</span>" :
+                "<button class='btn btn-secondary' style='font-size: 12px;' onclick='promptAddNonSppToCart(\"" + pos.idPos + "\", \"" + pos.namaPos + "\", " + pos.sisaTagihan + ")'>+ Cicilan</button>") +
+               "</div>" +
+               "</div>";
+      }).join("");
+    }
+
+    // Toggle SPP di Cart
+    function toggleSppCart(bulan, nominal, isLunas) {
+      if (isLunas) {
+        showToast("Bulan " + bulan + " sudah lunas!");
+        return;
+      }
+      var sppYear = document.getElementById("kasirSppYearFilter") ? document.getElementById("kasirSppYearFilter").value : "2026";
+      var monthKey = bulan + " " + sppYear;
+      var existingIndex = AppState.cart.findIndex(function(c) { return c.idPos === "POS-SPP" && c.bulan === monthKey; });
+      if (existingIndex > -1) {
+        AppState.cart.splice(existingIndex, 1);
+      } else {
+        AppState.cart.push({
+          idPos: "POS-SPP",
+          namaPos: "SPP Bulan " + bulan + " (" + sppYear + ")",
+          bulan: monthKey,
+          nominal: nominal
+        });
+      }
+      renderFeeSelection(AppState.selectedStudent);
+      renderCart();
+    }
+
+    // Tambah Non-SPP (DSP/PKL) ke Cart
+    function promptAddNonSppToCart(idPos, namaPos, sisaTagihan) {
+      var val = prompt("Masukkan nominal pembayaran untuk " + namaPos + " (Maks: " + formatRp(sisaTagihan) + "):", sisaTagihan);
+      if (!val) return;
+      var nominal = parseInt(val.replace(/[^0-9]/g, ""), 10);
+      if (isNaN(nominal) || nominal <= 0) {
+        showToast("Nominal tidak valid!");
+        return;
+      }
+      if (nominal > sisaTagihan) {
+        showToast("Nominal melebihi sisa tagihan (" + formatRp(sisaTagihan) + ")");
+        return;
+      }
+      AppState.cart.push({
+        idPos: idPos,
+        namaPos: namaPos,
+        bulan: "-",
+        nominal: nominal
+      });
+      renderCart();
+    }
+
+    function removeCartItem(idx) {
+      AppState.cart.splice(idx, 1);
+      if (AppState.selectedStudent) renderFeeSelection(AppState.selectedStudent);
+      renderCart();
+    }
+
+    function renderCart() {
+      var container = document.getElementById("cartItemsContainer");
+      var grandTotalSpan = document.getElementById("cartGrandTotal");
+      var btn = document.getElementById("btnProcessPayment");
+
+      if (AppState.cart.length === 0) {
+        container.innerHTML = "<p style='color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px 0;'>Belum ada pos yang dipilih.</p>";
+        grandTotalSpan.innerText = "Rp 0";
+        btn.disabled = true;
+        return;
+      }
+
+      var total = 0;
+      container.innerHTML = AppState.cart.map(function(item, idx) {
+        total += item.nominal;
+        return "<div class='cart-item'>" +
+               "<div>" +
+               "<div class='cart-item-title'>" + item.namaPos + "</div>" +
+               "<div class='cart-item-sub font-mono'>" + formatRp(item.nominal) + "</div>" +
+               "</div>" +
+               "<button style='background: none; border: none; color: var(--danger); cursor: pointer;' onclick='removeCartItem(" + idx + ")'>✕</button>" +
+               "</div>";
+      }).join("");
+
+      grandTotalSpan.innerText = formatRp(total);
+      btn.disabled = false;
+    }
+
+    // Proses Transaksi Batch Cart
+    function handleProcessPayment() {
+      if (!AppState.selectedStudent || AppState.cart.length === 0) return;
+
+      var btn = document.getElementById("btnProcessPayment");
+      btn.disabled = true;
+      btn.innerText = "Memproses Transaksi...";
+
+      var payload = {
+        nis: AppState.selectedStudent.siswa.nis,
+        nama: AppState.selectedStudent.siswa.nama,
+        kelas: AppState.selectedStudent.siswa.kelas,
+        noHpWali: AppState.selectedStudent.siswa.noHpWali,
+        metode: document.getElementById("paymentMethod").value,
+        kasir: AppState.user ? AppState.user.nama : "Kasir",
+        items: AppState.cart
+      };
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerText = "Proses Pembayaran & Kwitansi";
+          showToast("Pembayaran berhasil dicatat! No Kwitansi: " + res.noKwitansi);
+          
+          openReceiptModal(res, payload);
+          selectStudent(payload.nis); // refresh ledger siswa
+          loadInitialData(); // refresh statistik
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerText = "Proses Pembayaran & Kwitansi";
+          showToast("Gagal memproses pembayaran: " + err.message);
+        })
+        .processBatchTransaction(payload);
+    }
+
+    // Kwitansi Modal
+    function openReceiptModal(res, payload) {
+      document.getElementById("rcptNo").innerText = res.noKwitansi;
+      document.getElementById("rcptTime").innerText = formatCleanDate(res.tanggal) + " " + formatCleanTime(res.jam);
+      document.getElementById("rcptStudent").innerText = payload.nama + " (" + payload.nis + ")";
+      document.getElementById("rcptClass").innerText = payload.kelas;
+      document.getElementById("rcptCashier").innerText = payload.kasir;
+      document.getElementById("rcptTotal").innerText = formatRp(res.grandTotal);
+
+      var itemsHtml = payload.items.map(function(item) {
+        return "<div style='display: flex; justify-content: space-between; padding: 4px 0;'>" +
+               "<span>" + item.namaPos + "</span>" +
+               "<span class='font-mono'>" + formatRp(item.nominal) + "</span>" +
+               "</div>";
+      }).join("");
+
+      document.getElementById("rcptItemsList").innerHTML = itemsHtml;
+
+      var waBtn = document.getElementById("btnRcptWa");
+      if (res.waLink) {
+        waBtn.href = res.waLink;
+        waBtn.style.display = "inline-flex";
+      } else {
+        waBtn.style.display = "none";
+      }
+
+      AppState.lastReceipt = { res: res, payload: payload };
+      document.getElementById("receiptModal").classList.add("open");
+    }
+
+    function closeReceiptModal() {
+      document.getElementById("receiptModal").classList.remove("open");
+    }
+
+    function generatePrintableHtmlGAS(res, payload) {
+      var schoolName = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.NAMA_SEKOLAH) || "SEKOLAH";
+      var schoolAddr = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.ALAMAT_SEKOLAH) || "";
+      var schoolPhone = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.NO_TELP_SEKOLAH) || "";
+
+      var itemsTr = payload.items.map(function(item) {
+        return "<tr>" +
+               "<td style='padding: 6px 4px; border-bottom: 1px solid #e2e8f0; text-align: left;'>" +
+               "<strong>" + item.namaPos + "</strong>" +
+               (item.bulan && item.bulan !== '-' ? "<br><small style='color: #059669;'>Bulan: " + item.bulan + "</small>" : "") +
+               "</td>" +
+               "<td style='padding: 6px 4px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace; font-weight: bold;'>" +
+               formatRp(item.nominal) +
+               "</td></tr>";
+      }).join("");
+
+      return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Kwitansi " + res.noKwitansi + "</title>" +
+        "<style>" +
+        "@page { size: A5 portrait; margin: 10mm; }" +
+        "* { box-sizing: border-box; }" +
+        "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; margin: 0; padding: 16px; font-size: 13px; max-width: 160mm; margin-left: auto; margin-right: auto; }" +
+        ".header { text-align: center; border-bottom: 2px dashed #94a3b8; padding-bottom: 10px; margin-bottom: 14px; }" +
+        ".title { font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0; }" +
+        ".sub { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }" +
+        ".badge { display: inline-block; margin-top: 6px; padding: 3px 8px; background: #f1f5f9; font-size: 10px; font-weight: bold; border-radius: 4px; }" +
+        ".meta { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }" +
+        ".meta td { padding: 3px 0; vertical-align: top; }" +
+        ".items { width: 100%; border-collapse: collapse; margin-bottom: 14px; }" +
+        ".items th { border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 4px; font-size: 11px; text-align: left; }" +
+        ".total { border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a; padding: 8px 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; }" +
+        ".sign { width: 100%; margin-top: 20px; text-align: center; font-size: 11px; }" +
+        ".sign td { width: 50%; vertical-align: top; }" +
+        ".space { height: 45px; }" +
+        ".foot { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 18px; border-top: 1px dashed #e2e8f0; padding-top: 6px; }" +
+        "</style></head><body onload='window.print()'>" +
+        "<div class='header'>" +
+        "<div class='title'>" + schoolName + "</div>" +
+        "<div class='sub'>" + schoolAddr + " · Telp: " + schoolPhone + "</div>" +
+        "<div class='badge'>KWITANSI PEMBAYARAN KEUANGAN</div>" +
+        "</div>" +
+        "<table class='meta'>" +
+        "<tr><td style='color:#64748b; width:90px;'>No. Kwitansi</td><td>: <strong style='font-family:monospace;'>" + res.noKwitansi + "</strong></td><td style='color:#64748b; width:80px;'>Waktu</td><td>: " + formatCleanDate(res.tanggal) + " " + formatCleanTime(res.jam) + "</td></tr>" +
+        "<tr><td style='color:#64748b;'>NIS / Siswa</td><td>: <strong>" + payload.nis + " - " + payload.nama + "</strong></td><td style='color:#64748b;'>Kelas</td><td>: " + payload.kelas + "</td></tr>" +
+        "<tr><td style='color:#64748b;'>Metode</td><td>: <strong style='color:#059669;'>" + payload.metode + "</strong></td><td style='color:#64748b;'>Kasir</td><td>: " + payload.kasir + "</td></tr>" +
+        "</table>" +
+        "<table class='items'><thead><tr><th>Rincian Pos Biaya</th><th style='text-align:right;'>Nominal</th></tr></thead><tbody>" +
+        itemsTr +
+        "</tbody></table>" +
+        "<div class='total'><span>TOTAL DIBAYAR</span><span style='color:#059669; font-family:monospace;'>" + formatRp(res.grandTotal) + "</span></div>" +
+        "<table class='sign'><tr><td><div>Penyetor / Wali Murid</div><div class='space'></div><div><u>( " + payload.nama + " )</u></div></td>" +
+        "<td><div>Petugas Kasir</div><div class='space'></div><div><u>( " + payload.kasir + " )</u></div></td></tr></table>" +
+        "<div class='foot'>*Simpan bukti kwitansi ini sebagai tanda pelunasan resmi keuangan sekolah.*</div>" +
+        "</body></html>";
+    }
+
+    function cetakKwitansi() {
+      if (!AppState.lastReceipt) {
+        showToast("Data kwitansi belum tersedia untuk dicetak.");
+        return;
+      }
+      showToast("Mempersiapkan proses cetak kwitansi...");
+      var rc = AppState.lastReceipt;
+      var html = generatePrintableHtmlGAS(rc.res, rc.payload);
+
+      try {
+        var old = document.getElementById("gasPrintFrame");
+        if (old) old.remove();
+
+        var iframe = document.createElement("iframe");
+        iframe.id = "gasPrintFrame";
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "1px";
+        iframe.style.height = "1px";
+        iframe.style.border = "none";
+        iframe.style.opacity = "0.01";
+        document.body.appendChild(iframe);
+
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+
+        setTimeout(function() {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } catch (e1) {
+            try {
+              window.print();
+            } catch (e2) {
+              unduhDokumenKwitansi();
+              showToast("Pencetakan langsung dibatasi oleh frame. File kwitansi otomatis diunduh!");
+            }
+          }
+        }, 350);
+      } catch (err) {
+        unduhDokumenKwitansi();
+        showToast("Pencetakan dibatasi. File kwitansi otomatis diunduh!");
+      }
+    }
+
+    function unduhDokumenKwitansi() {
+      if (!AppState.lastReceipt) {
+        showToast("Data kwitansi belum tersedia.");
+        return;
+      }
+      var rc = AppState.lastReceipt;
+      var html = generatePrintableHtmlGAS(rc.res, rc.payload);
+      var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "Kwitansi_" + rc.res.noKwitansi + ".html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("File kwitansi berhasil diunduh (buka file untuk cetak/simpan PDF).");
+    }
+
+    // Load Buku Kas
+    function loadCashBook() {
+      var s = document.getElementById("filterStartDate").value;
+      var e = document.getElementById("filterEndDate").value;
+      google.script.run
+        .withSuccessHandler(function(data) {
+          renderCashBook(data.transactions);
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal memuat buku kas: " + err.message);
+        })
+        .getFinancialReport(s, e, "SEMUA");
+    }
+
+    function renderCashBook(list) {
+      var tbody = document.getElementById("cashBookTableBody");
+      if (!list || list.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='10' style='text-align: center; color: var(--text-muted);'>Tidak ada transaksi pada periode ini.</td></tr>";
+        return;
+      }
+      tbody.innerHTML = list.map(function(t) {
+        var isBatal = t.status === "Batal";
+        var cleanDate = formatCleanDate(t.tanggal);
+        var cleanTime = formatCleanTime(t.jam);
+        var cleanPos = formatCleanPosBiaya(t.namaPos, t.bulan);
+        return "<tr class='" + (isBatal ? "tag-batal" : "") + "'>" +
+               "<td class='font-mono'><strong>" + t.noKwitansi + "</strong></td>" +
+               "<td>" + cleanDate + " <span style='font-size: 11px; color: var(--text-muted); font-family: monospace;'>" + cleanTime + "</span></td>" +
+               "<td class='font-mono'>" + t.nis + "</td>" +
+               "<td>" + t.nama + "</td>" +
+               "<td>" + cleanPos + "</td>" +
+               "<td style='text-align: right;' class='font-mono'>" + formatRp(t.nominal) + "</td>" +
+               "<td>" + t.metode + "</td>" +
+               "<td>" + t.kasir + "</td>" +
+               "<td>" + (isBatal ? "<span class='tag-batal'>Batal</span>" : "<span class='tag-lunas'>Sukses</span>") + "</td>" +
+               "<td>" + (!isBatal ? "<button class='btn btn-danger' style='padding: 4px 8px; font-size: 11px;' onclick='promptCancelTransaction(\"" + t.noKwitansi + "\")'>Undo</button>" : "-") + "</td>" +
+               "</tr>";
+      }).join("");
+    }
+
+    // Batalkan Transaksi (Undo)
+    function promptCancelTransaction(noKwitansi) {
+      var pin = prompt("Otorisasi Pembatalan: Masukkan PIN Anda:");
+      if (!pin) return;
+      var alasan = prompt("Masukkan alasan pembatalan transaksi:");
+      if (!alasan) return;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          showToast(res.message);
+          loadCashBook();
+          loadInitialData();
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal membatalkan transaksi: " + err.message);
+        })
+        .cancelTransaction(noKwitansi, pin, alasan);
+    }
+
+    // ==========================================
+    // MENU BUKU SISWA (LEDGER & KARTU PEMBAYARAN)
+    // ==========================================
+    function onSearchLedgerStudent(query) {
+      var resDiv = document.getElementById("ledgerStudentResults");
+      if (!query || query.length < 1) {
+        resDiv.style.display = "none";
+        return;
+      }
+      var students = AppState.initialData ? AppState.initialData.siswaList : [];
+      var filtered = students.filter(function(s) {
+        return s.nis.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+               s.nama.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+      });
+
+      if (filtered.length === 0) {
+        resDiv.innerHTML = "<div style='padding: 10px; font-size: 13px; color: #94a3b8;'>Siswa tidak ditemukan</div>";
+      } else {
+        resDiv.innerHTML = filtered.map(function(s) {
+          return "<div style='padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9;' onclick='selectLedgerStudent(\"" + s.nis + "\")'>" +
+                 "<strong>" + s.nama + "</strong> (" + s.kelas + ") - NIS: " + s.nis +
+                 "</div>";
+        }).join("");
+      }
+      resDiv.style.display = "block";
+    }
+
+    function selectLedgerStudent(nis) {
+      document.getElementById("ledgerStudentResults").style.display = "none";
+      showToast("Mengambil data buku bayar siswa...");
+
+      google.script.run
+        .withSuccessHandler(function(ledger) {
+          AppState.currentLedger = ledger;
+          document.getElementById("ledgerName").innerText = ledger.siswa.nama;
+          document.getElementById("ledgerNis").innerText = ledger.siswa.nis;
+          document.getElementById("ledgerKelas").innerText = ledger.siswa.kelas;
+          document.getElementById("ledgerRemainingTotal").innerText = formatRp(ledger.sisaSemuaTagihan);
+
+          var tbody = document.getElementById("ledgerPosTableBody");
+          tbody.innerHTML = ledger.posStatus.map(function(p) {
+            var isLunas = p.isLunas || p.sisaTagihan === 0;
+            return "<tr>" +
+                   "<td><strong>" + p.namaPos + "</strong></td>" +
+                   "<td>" + (p.tipe === "SPP_BULANAN" ? "Bulanan" : "Cicilan") + "</td>" +
+                   "<td style='text-align: right;' class='font-mono'>" + formatRp(p.totalTarget) + "</td>" +
+                   "<td style='text-align: right; color: var(--accent);' class='font-mono'>" + formatRp(p.totalBayar) + "</td>" +
+                   "<td style='text-align: right; font-weight: bold; color: " + (p.sisaTagihan > 0 ? "var(--danger)" : "var(--accent)") + ";' class='font-mono'>" + formatRp(p.sisaTagihan) + "</td>" +
+                   "<td>" + (isLunas ? "<span class='tag-lunas'>LUNAS</span>" : "<span style='color: var(--danger); font-weight: 600;'>Belum Lunas</span>") + "</td>" +
+                   "</tr>";
+          }).join("");
+
+          document.getElementById("ledgerDetailContainer").style.display = "block";
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal memuat buku siswa: " + err.message);
+        })
+        .getStudentLedger(nis);
+    }
+
+    function buildWhatsAppBillingNoticeGAS(ledger) {
+      var today = new Date();
+      var day = String(today.getDate()).padStart(2, "0");
+      var month = String(today.getMonth() + 1).padStart(2, "0");
+      var year = today.getFullYear();
+      var formattedDate = day + "/" + month + "/" + year;
+
+      var unpaid = ledger.posStatus.filter(function(p) {
+        return p.sisaTagihan > 0;
+      });
+
+      var itemsList = unpaid.map(function(p, idx) {
+        return (idx + 1) + ". " + p.namaPos + " : " + formatRp(p.sisaTagihan);
+      });
+
+      var itemsText = itemsList.length > 0
+        ? itemsList.join("\n")
+        : "1. Semua Pos Biaya : Rp 0 (LUNAS)";
+
+      return "PEMBERITAHUAN KEWAJIBAN BIAYA SEKOLAH\n" +
+             "Yth. Bapak/Ibu Wali Murid dari:\n" +
+             "Nama  : " + ledger.siswa.nama + "\n" +
+             "NIS   : " + ledger.siswa.nis + "\n" +
+             "Kelas : " + ledger.siswa.kelas + "\n\n" +
+             "Berikut rincian kewajiban yang belum diselesaikan per tanggal " + formattedDate + " :\n" +
+             itemsText + "\n" +
+             "--------------------------------------\n" +
+             "TOTAL KEWAJIBAN : " + formatRp(ledger.sisaSemuaTagihan) + "\n\n" +
+             "Pembayaran dapat diselesaikan langsung di loket kasir\n" +
+             "bendahara sekolah atau via transper bank dengan Nomor Rekening BRI : 009201011149539\n" +
+             "A.N. SMK PGRI 1  Terima kasih. (Abaikan pesan ini jika sudah melakukan pembayaran)";
+    }
+
+    function sendWhatsAppBillingNotice() {
+      if (!AppState.currentLedger) {
+        showToast("Pilih siswa terlebih dahulu!");
+        return;
+      }
+      var ledger = AppState.currentLedger;
+      var rawPhone = ledger.siswa.noHpWali || "";
+      var cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+      if (cleanPhone.indexOf("0") === 0) {
+        cleanPhone = "62" + cleanPhone.substring(1);
+      } else if (cleanPhone.indexOf("8") === 0) {
+        cleanPhone = "62" + cleanPhone;
+      }
+
+      var msg = buildWhatsAppBillingNoticeGAS(ledger);
+      var waUrl = cleanPhone
+        ? "https://wa.me/" + cleanPhone + "?text=" + encodeURIComponent(msg)
+        : "https://wa.me/?text=" + encodeURIComponent(msg);
+
+      try {
+        navigator.clipboard.writeText(msg);
+      } catch (e) {}
+
+      window.open(waUrl, "_blank");
+      showToast("Membuka WhatsApp untuk wali murid: " + ledger.siswa.nama);
+    }
+
+    function generateStudentCardHtmlGAS(ledger) {
+      var schoolName = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.NAMA_SEKOLAH) || "SEKOLAH";
+      var schoolAddr = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.ALAMAT_SEKOLAH) || "";
+      var schoolPhone = (AppState.initialData && AppState.initialData.settings && AppState.initialData.settings.NO_TELP_SEKOLAH) || "";
+
+      var rows = ledger.posStatus.map(function(p) {
+        var isLunas = p.isLunas || p.sisaTagihan === 0;
+        return "<tr>" +
+               "<td style='padding: 6px; border-bottom: 1px solid #e2e8f0; font-weight: 600;'>" + p.namaPos + "</td>" +
+               "<td style='padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace;'>" + formatRp(p.totalTarget) + "</td>" +
+               "<td style='padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace; color: #059669; font-weight: 600;'>" + formatRp(p.totalBayar) + "</td>" +
+               "<td style='padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace; font-weight: bold; color: " + (p.sisaTagihan > 0 ? "#e11d48" : "#059669") + ";'>" + formatRp(p.sisaTagihan) + "</td>" +
+               "<td style='padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: 600; color: " + (isLunas ? "#059669" : "#e11d48") + ";'>" + (isLunas ? "LUNAS" : "Belum Lunas") + "</td>" +
+               "</tr>";
+      }).join("");
+
+      var todayStr = new Date().toLocaleDateString("id-ID");
+
+      return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Kartu Pembayaran - " + ledger.siswa.nis + "</title>" +
+        "<style>" +
+        "@page { size: A4 portrait; margin: 12mm; }" +
+        "* { box-sizing: border-box; }" +
+        "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; margin: 0; padding: 16px; font-size: 12px; }" +
+        ".header { text-align: center; border-bottom: 2px dashed #94a3b8; padding-bottom: 10px; margin-bottom: 14px; }" +
+        ".title { font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0; }" +
+        ".sub { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }" +
+        ".badge { display: inline-block; margin-top: 6px; padding: 3px 8px; background: #f1f5f9; font-size: 10px; font-weight: bold; border-radius: 4px; }" +
+        ".meta { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; }" +
+        ".meta td { padding: 4px 8px; }" +
+        "table.data { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 11px; }" +
+        "table.data th { background: #f8fafc; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px; text-align: left; }" +
+        ".total-box { display: flex; justify-content: space-between; padding: 10px; background: #f1f5f9; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: bold; }" +
+        ".bank-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 11px; }" +
+        ".sign { width: 100%; margin-top: 24px; text-align: center; font-size: 11px; }" +
+        ".sign td { width: 50%; vertical-align: top; }" +
+        ".space { height: 45px; }" +
+        "</style></head><body onload='window.print()'>" +
+        "<div class='header'>" +
+        "<div class='title'>" + schoolName + "</div>" +
+        "<div class='sub'>" + schoolAddr + " · Telp: " + schoolPhone + "</div>" +
+        "<div class='badge'>KARTU PEMBAYARAN KEUANGAN SISWA</div>" +
+        "</div>" +
+        "<table class='meta'>" +
+        "<tr><td style='color:#64748b; width:90px;'>Nama Siswa</td><td>: <strong>" + ledger.siswa.nama + "</strong></td><td style='color:#64748b; width:80px;'>Kelas</td><td>: " + ledger.siswa.kelas + "</td></tr>" +
+        "<tr><td style='color:#64748b;'>NIS</td><td>: <strong style='font-family:monospace;'>" + ledger.siswa.nis + "</strong></td><td style='color:#64748b;'>Jurusan</td><td>: " + (ledger.siswa.jurusan || "-") + "</td></tr>" +
+        "</table>" +
+        "<div class='total-box'>" +
+        "<span>TOTAL KEWAJIBAN: " + formatRp(ledger.totalSemuaTagihan) + "</span>" +
+        "<span style='color:#059669;'>SUDAH DIBAYAR: " + formatRp(ledger.totalSudahDibayar) + "</span>" +
+        "<span style='color:" + (ledger.sisaSemuaTagihan > 0 ? "#e11d48" : "#059669") + ";'>SISA TUNGGAKAN: " + formatRp(ledger.sisaSemuaTagihan) + "</span>" +
+        "</div>" +
+        "<table class='data'><thead><tr><th>Pos Biaya</th><th style='text-align:right;'>Target Biaya</th><th style='text-align:right;'>Sudah Dibayar</th><th style='text-align:right;'>Sisa Tagihan</th><th style='text-align:center;'>Status</th></tr></thead><tbody>" +
+        rows +
+        "</tbody></table>" +
+        "<div class='bank-box'><strong>REKENING RESMI PEMBAYARAN:</strong> Bank BRI : 009201011149539 A.N. SMK PGRI 1 (Loket Kasir Sekolah)</div>" +
+        "<table class='sign'><tr><td><div>Mengetahui,</div><div>Kepala Sekolah</div><div class='space'></div><div><u>( Kepala Sekolah )</u></div></td>" +
+        "<td><div>Dicetak per " + todayStr + "</div><div>Petugas Kasir Keuangan</div><div class='space'></div><div><u>( Kasir Keuangan )</u></div></td></tr></table>" +
+        "</body></html>";
+    }
+
+    function cetakKartuSiswa() {
+      if (!AppState.currentLedger) {
+        showToast("Pilih siswa terlebih dahulu sebelum mencetak kartu.");
+        return;
+      }
+      showToast("Mempersiapkan cetak kartu siswa...");
+      var ledger = AppState.currentLedger;
+      var html = generateStudentCardHtmlGAS(ledger);
+
+      try {
+        var old = document.getElementById("gasPrintFrameCard");
+        if (old) old.remove();
+
+        var iframe = document.createElement("iframe");
+        iframe.id = "gasPrintFrameCard";
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "1px";
+        iframe.style.height = "1px";
+        iframe.style.border = "none";
+        iframe.style.opacity = "0.01";
+        document.body.appendChild(iframe);
+
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+
+        setTimeout(function() {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } catch (e1) {
+            try {
+              window.print();
+            } catch (e2) {
+              unduhKartuSiswa();
+              showToast("Pencetakan dibatasi sandbox iframe. File kartu otomatis diunduh!");
+            }
+          }
+        }, 350);
+      } catch (err) {
+        unduhKartuSiswa();
+        showToast("Pencetakan dibatasi. File kartu siswa otomatis diunduh!");
+      }
+    }
+
+    function unduhKartuSiswa() {
+      if (!AppState.currentLedger) {
+        showToast("Pilih siswa terlebih dahulu.");
+        return;
+      }
+      var ledger = AppState.currentLedger;
+      var html = generateStudentCardHtmlGAS(ledger);
+      var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "Kartu_Pembayaran_" + ledger.siswa.nis + ".html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("File kartu pembayaran siswa berhasil diunduh (buka untuk mencetak).");
+    }
+
+    // Chart.js Visual
+    function loadChartData() {
+      var yr = document.getElementById("chartYearFilter").value;
+      var badge = document.getElementById("chartYearTotalBadge");
+      if (badge) badge.innerText = "Mengambil data riil tahun " + yr + "...";
+
+      google.script.run
+        .withSuccessHandler(function(chartData) {
+          if (badge) {
+            var rev = chartData.totalYearRevenue || 0;
+            var cnt = chartData.totalYearTransactions || 0;
+            badge.innerText = "Total Penerimaan Riil Tahun " + yr + ": Rp " + Number(rev).toLocaleString("id-ID") + " (" + cnt + " Transaksi)";
+          }
+
+          var ctx = document.getElementById("financialChartCanvas").getContext("2d");
+          if (AppState.chartInstance) {
+            AppState.chartInstance.destroy();
+          }
+          AppState.chartInstance = new Chart(ctx, {
+            type: "bar",
+            data: chartData,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: {
+                    boxWidth: 12,
+                    font: { family: "'Plus Jakarta Sans', sans-serif", size: 12 }
+                  }
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      var val = context.raw || 0;
+                      return " " + context.dataset.label + ": Rp " + Number(val).toLocaleString("id-ID");
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function(v) { return "Rp " + (v / 1000).toLocaleString("id-ID") + "k"; }
+                  }
+                }
+              }
+            }
+          });
+        })
+        .withFailureHandler(function(err) {
+          if (badge) badge.innerText = "Gagal memuat data grafik";
+          showToast("Gagal memuat grafik: " + err.message);
+        })
+        .getMonthlyChartData(yr);
+    }
+
+    // Backup Database Otomatis
+    function handleBackupNow() {
+      showToast("Sedang mencadangkan database ke Google Drive...");
+      google.script.run
+        .withSuccessHandler(function(res) {
+          showToast("Backup berhasil! File: " + res.fileName);
+        })
+        .withFailureHandler(function(err) {
+          showToast("Gagal backup: " + err.message);
+        })
+        .triggerAutomatedBackup();
+    }
+
+    function handleInitDatabase() {
+      showToast("Memverifikasi sheet...");
+      google.script.run
+        .withSuccessHandler(function(res) {
+          showToast(res.message);
+          loadInitialData();
+        })
+        .withFailureHandler(function(err) {
+          showToast("Error inisialisasi: " + err.message);
+        })
+        .initDatabase();
+    }
+
+    // ==========================================
+    // MONITORING TUNGGAKAN SISWA PER KELAS (DASHBOARD)
+    // ==========================================
+    function populateDashboardClasses(siswaList) {
+      var select = document.getElementById("dashboardClassSelect");
+      if (!select || !siswaList) return;
+      var classesSet = {};
+      siswaList.forEach(function(s) {
+        if (s.kelas) classesSet[s.kelas] = (classesSet[s.kelas] || 0) + 1;
+      });
+      var classes = Object.keys(classesSet).sort();
+      select.innerHTML = classes.map(function(cls) {
+        return "<option value='" + cls + "'>Kelas " + cls + " (" + classesSet[cls] + " Siswa)</option>";
+      }).join("");
+
+      if (classes.length > 0) {
+        onDashboardClassChange();
+      }
+    }
+
+    function onDashboardClassChange() {
+      var select = document.getElementById("dashboardClassSelect");
+      if (!select || !select.value || !AppState.initialData) return;
+      var selectedClass = select.value;
+      var students = AppState.initialData.siswaList.filter(function(s) {
+        return s.kelas === selectedClass;
+      });
+
+      var container = document.getElementById("dashboardClassStudentsList");
+      if (!container) return;
+
+      if (students.length === 0) {
+        container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-muted);'>Tidak ada siswa di kelas ini.</div>";
+        updateDashboardClassSummary(0, 0, 0, 0);
+        return;
+      }
+
+      container.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-muted);'>Memuat status tunggakan kelas " + selectedClass + "...</div>";
+
+      var processed = 0;
+      var ledgers = [];
+
+      students.forEach(function(s) {
+        google.script.run
+          .withSuccessHandler(function(ledger) {
+            ledgers.push(ledger);
+            processed++;
+            if (processed === students.length) {
+              renderDashboardClassLedgers(ledgers);
+            }
+          })
+          .withFailureHandler(function() {
+            processed++;
+            if (processed === students.length) {
+              renderDashboardClassLedgers(ledgers);
+            }
+          })
+          .getStudentLedger(s.nis);
+      });
+    }
+
+    function renderDashboardClassLedgers(ledgers) {
+      var countMenunggak = 0;
+      var countLunas = 0;
+      var totalArrears = 0;
+
+      var container = document.getElementById("dashboardClassStudentsList");
+      if (!container) return;
+
+      container.innerHTML = ledgers.map(function(l) {
+        var isLunas = l.sisaSemuaTagihan === 0;
+        if (isLunas) countLunas++; else countMenunggak++;
+        totalArrears += l.sisaSemuaTagihan;
+
+        var unpaidItemsHtml = "";
+        if (isLunas) {
+          unpaidItemsHtml = "<div style='padding: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; color: #047857; font-size: 11px;'>✓ Tidak ada tunggakan. Seluruh biaya sekolah LUNAS.</div>";
+        } else {
+          var unpaids = l.posStatus.filter(function(p) { return p.sisaTagihan > 0; });
+          unpaidItemsHtml = unpaids.map(function(p) {
+            var sppDetailText = "";
+            if (p.idPos === "POS-SPP" && p.sppMonths) {
+              var unMonths = p.sppMonths.filter(function(m) { return !m.isLunas; }).map(function(m) { return m.bulan; });
+              sppDetailText = "<div style='font-size: 10px; color: #b45309; margin-top: 2px;'>" + unMonths.length + " Bulan Belum Lunas: " + unMonths.join(", ") + "</div>";
+            }
+            return "<div style='padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 4px; font-size: 11px;'>" +
+                   "<div style='display: flex; justify-content: space-between; font-weight: 600;'>" +
+                   "<span>" + p.namaPos + "</span>" +
+                   "<span class='font-mono' style='color: var(--danger);'>" + formatRp(p.sisaTagihan) + "</span>" +
+                   "</div>" +
+                   sppDetailText +
+                   "</div>";
+          }).join("");
+        }
+
+        return "<div class='card' style='margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;'>" +
+               "<div>" +
+               "<div style='display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;'>" +
+               "<div>" +
+               "<strong style='font-size: 14px;'>" + l.siswa.nama + "</strong>" +
+               "<div style='font-size: 11px; color: var(--text-muted);'>NIS: <strong class='font-mono'>" + l.siswa.nis + "</strong> · " + l.siswa.kelas + "</div>" +
+               (l.siswa.noHpWali ? "<div style='font-size: 10px; color: var(--text-muted);'>WA: " + l.siswa.noHpWali + "</div>" : "") +
+               "</div>" +
+               "<div>" +
+               (isLunas ? "<span class='tag-lunas'>Lunas</span>" : "<span class='tag-batal'>Menunggak</span>") +
+               "</div>" +
+               "</div>" +
+               "<div style='margin-top: 8px; margin-bottom: 12px;'>" +
+               "<div style='font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;'>Rincian Pos Tunggakan:</div>" +
+               unpaidItemsHtml +
+               "</div>" +
+               "</div>" +
+               "<div style='border-top: 1px solid var(--border); padding-top: 10px;'>" +
+               "<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: var(--bg); padding: 8px; border-radius: 6px;'>" +
+               "<span style='font-size: 11px; font-weight: 600;'>Total Tunggakan:</span>" +
+               "<span class='font-mono' style='font-size: 13px; font-weight: 700; color: " + (isLunas ? "var(--accent)" : "var(--danger)") + ";'>" + formatRp(l.sisaSemuaTagihan) + "</span>" +
+               "</div>" +
+               "<button class='btn btn-primary' style='width: 100%; font-size: 11px; padding: 8px; background: #059669; display: flex; align-items: center; justify-content: center; gap: 4px;' onclick='sendWhatsAppBillingNoticeFromStudent(\"" + l.siswa.nis + "\")'>" +
+               "📲 Kirim rincian Tagihan ke WA" +
+               "</button>" +
+               "</div>" +
+               "</div>";
+      }).join("");
+
+      updateDashboardClassSummary(ledgers.length, countMenunggak, countLunas, totalArrears);
+    }
+
+    function updateDashboardClassSummary(total, unpaid, paid, arrears) {
+      var t = document.getElementById("clsTotalStudents");
+      var u = document.getElementById("clsUnpaidStudents");
+      var p = document.getElementById("clsPaidStudents");
+      var a = document.getElementById("clsTotalArrears");
+      if (t) t.innerText = total;
+      if (u) u.innerText = unpaid;
+      if (p) p.innerText = paid;
+      if (a) a.innerText = formatRp(arrears);
+    }
+
+    function sendWhatsAppBillingNoticeFromStudent(nis) {
+      showToast("Menyiapkan tagihan WhatsApp...");
+      google.script.run
+        .withSuccessHandler(function(ledger) {
+          AppState.currentLedger = ledger;
+          sendWhatsAppBillingNotice();
+        })
+        .withFailureHandler(function(err) {
+          showToast("Error: " + err.message);
+        })
+        .getStudentLedger(nis);
+    }
+
+    // Tutorial Navigation & Search
+    function filterTutorialCategory(category, btnEl) {
+      document.querySelectorAll(".tutorial-pill").forEach(function(p) {
+        p.classList.remove("active");
+      });
+      if (btnEl) btnEl.classList.add("active");
+
+      var searchInput = document.getElementById("tutorialSearchInput");
+      if (searchInput) searchInput.value = "";
+
+      var cards = document.querySelectorAll(".tutorial-card");
+      cards.forEach(function(card) {
+        if (category === "all" || card.getAttribute("data-category") === category) {
+          card.style.display = "block";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    }
+
+    function handleTutorialSearch() {
+      var query = (document.getElementById("tutorialSearchInput").value || "").toLowerCase().trim();
+      var cards = document.querySelectorAll(".tutorial-card");
+      
+      // Reset active pill to 'all' if searching
+      if (query) {
+        document.querySelectorAll(".tutorial-pill").forEach(function(p, idx) {
+          if (idx === 0) p.classList.add("active");
+          else p.classList.remove("active");
+        });
+      }
+
+      cards.forEach(function(card) {
+        if (!query) {
+          card.style.display = "block";
+          return;
+        }
+        var text = card.innerText.toLowerCase();
+        if (text.indexOf(query) !== -1) {
+          card.style.display = "block";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    }
+
+    function toggleFaqAccordion(headerEl) {
+      var item = headerEl.parentElement;
+      var answer = item.querySelector(".faq-answer");
+      var arrow = headerEl.querySelector(".faq-arrow");
+      if (!answer) return;
+      if (answer.style.display === "none") {
+        answer.style.display = "block";
+        if (arrow) arrow.innerText = "▲";
+      } else {
+        answer.style.display = "none";
+        if (arrow) arrow.innerText = "▼";
+      }
+    }
+
+    // Theme (Mode Gelap / Mode Terang)
+    function initGasTheme() {
+      try {
+        var saved = localStorage.getItem("sikese_gas_theme");
+        var isDark = saved === "dark";
+        applyGasTheme(isDark);
+      } catch (e) {}
+    }
+
+    function toggleGasTheme() {
+      var isDark = document.body.classList.contains("dark");
+      applyGasTheme(!isDark);
+    }
+
+    function applyGasTheme(isDark) {
+      var icon = document.getElementById("themeToggleIcon");
+      var text = document.getElementById("themeToggleText");
+      if (isDark) {
+        document.body.classList.add("dark");
+        if (icon) icon.innerText = "☀️";
+        if (text) text.innerText = "Terang";
+        try { localStorage.setItem("sikese_gas_theme", "dark"); } catch (e) {}
+      } else {
+        document.body.classList.remove("dark");
+        if (icon) icon.innerText = "🌙";
+        if (text) text.innerText = "Gelap";
+        try { localStorage.setItem("sikese_gas_theme", "light"); } catch (e) {}
+      }
+    }
+
+    // Inisialisasi tema saat halaman dimuat
+    initGasTheme();
+  </script>
+</body>
+</html>

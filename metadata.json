@@ -1,0 +1,6 @@
+{
+  "name": "SiKeSe - Sistem Keuangan Sekolah",
+  "description": "Sistem Informasi Keuangan Sekolah & Madrasah berbasis Cloud Google Sheets & Apps Script dengan fitur multi-role Kasir/Kepala Sekolah, keranjang pembayaran multi-pos, cetak kwitansi, dan notifikasi WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
